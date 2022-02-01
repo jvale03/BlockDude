@@ -39,14 +39,9 @@ data Tipos = Nada
            | WinCima
            | WinBaixo
            | Continue
-           | OpcoesDB
-           | NiveisDB
            | NiveisNormal
            | OpcoesNormal
-           | GameNormal
-           | GameAmong
-           | NiveisAmong
-           | OpcoesAmong
+           | GameNormal  
            | BlockDude 
            | DragonBall
            | AmongUs
@@ -61,6 +56,12 @@ data Tipos = Nada
            | Show8
            | Show9
            | Show10
+           | Theme1
+           | Theme2
+           | Theme3
+           | ATheme
+           | DBTheme
+           | NTheme
 
 data Jogos = Jogo1
            | Jogo2
@@ -92,12 +93,12 @@ data OpcoesNiveis = Nivel1
                   | Nivel10
                   | Voltar
 
-data Menu = Controlador OpcoesPrincipal 
-          | Selecionador OpcoesNiveis
-          | ModoJogo Jogo Jogo Jogos
-          | Pergaminho 
-          | ImagemVitoria OpcoesPrincipal Jogo Jogos
-          | Temas Tipos
+data Menu = Controlador OpcoesPrincipal Tipos
+          | Selecionador OpcoesNiveis Tipos
+          | ModoJogo Jogo Jogo Jogos Tipos
+          | Pergaminho Tipos
+          | ImagemVitoria OpcoesPrincipal Jogo Jogos Tipos
+          | Temas Tipos Tipos
 
 ------------
 --- type ---
@@ -140,8 +141,12 @@ loadMenus = do jogar <- loadBMP "Jogar.bmp"
                among <- loadBMP "Among.bmp"
                voltar <- loadBMP "Voltar.bmp"
                temas <- loadBMP "Temas.bmp"
+               atheme <- loadBMP "AmongTheme.bmp"
+               dbtheme <- loadBMP "DBTheme.bmp"
+               ntheme <- loadBMP "NormalTheme.bmp" 
                return [(Scale 5 5 jogar),(Scale 5 5 nivel),(Scale 5 5 instrucoes),(Scale 5 5 sair),(Translate (-38) (92) (Scale 3 3 seta)),
-                       (Scale 5 5 blockdude),(Scale 5 5 db),(Scale 5 5 among),(Scale 5 5 voltar),(Scale 5 5 temas)]
+                       (Scale 5 5 blockdude),(Scale 5 5 db),(Scale 5 5 among),(Scale 5 5 voltar),(Scale 5 5 temas),
+                       (Translate 250 (0) (Scale 0.45 0.45 ntheme)),(Translate 250 (0) (Scale 0.45 0.45 dbtheme)),(Translate 250 (0) (Scale 0.45 0.45 atheme))]
 
 loadJogar :: IO [Picture]
 loadJogar = do portaD <- loadBMP "PrincesaRight.bmp"
@@ -162,9 +167,9 @@ loadJogar = do portaD <- loadBMP "PrincesaRight.bmp"
                gokuL <- loadBMP "GokuL.bmp"
                dbBox <- loadBMP "DBBox.bmp"
                dbBlock <- loadBMP "DBBlock.bmp"            
-               return [(Scale 0.24 0.24 portaE),(Scale 0.24 0.24 portaD),(Translate 0 (-1) (Scale 0.3 0.3 personD)),(Translate 0 (-1) (Scale 0.3 0.3 personE)),(Translate (0) (0) (Scale 0.3 0.3 bloco)),(Translate (0) (0) (Scale 0.3 0.3 caixa)),
-                       (Translate (30) (-31) (Scale 1.05 1.05 buttom)),(Translate (30) (-31) (Scale 1.05 1.05 buttom)),(Translate (78) (-76) (Scale 2 2 amongR)),(Translate (64) (-76) (Scale 2 2 amongL)),(Translate (126) (-126) (Scale 3 3 amongBlock)),(Translate (126) (-126) (Scale 3 3 amongBox)),
-                       (Translate (0) (0) (Scale 0.11 0.14 shenlong)),(Translate (0) (0) (Scale 0.11 0.14 shenlong)),(Translate (-3) (1) (Scale 0.19 0.170 gokuR)),(Translate (-3) (1) (Scale 0.19 0.170 gokuL)),(Translate (126) (-126) (Scale 3 3 dbBlock)),(Translate (120) (-120) (Scale 2.9 2.9 dbBox))]
+               return [(Scale 0.24 0.24 portaE),(Scale 0.24 0.24 portaD),(Translate 0 (0) (Scale 0.3 0.29 personD)),(Translate 0 (0) (Scale 0.3 0.29 personE)),(Translate (0) (0) (Scale 0.3 0.3 bloco)),(Translate (0) (0) (Scale 0.3 0.3 caixa)),
+                       (Translate (30) (-31) (Scale 1.05 1.05 buttom)),(Translate (78) (-76) (Scale 2 2 amongR)),(Translate (64) (-76) (Scale 2 2 amongL)),(Translate (126) (-126) (Scale 3 3 amongBlock)),(Translate (126) (-126) (Scale 3 3 amongBox)),
+                       (Translate (0) (0) (Scale 0.11 0.14 shenlong)),(Translate (-3) (1) (Scale 0.19 0.170 gokuR)),(Translate (-3) (1) (Scale 0.19 0.170 gokuL)),(Translate (126) (-126) (Scale 3 3 dbBlock)),(Translate (120) (-120) (Scale 2.9 2.9 dbBox))]
 
 loadNiveis :: IO [Picture]
 loadNiveis = do nivel1 <- loadBMP "1.bmp"
@@ -261,7 +266,7 @@ fr = 200
 == Estado Inicial
 -}
 estadoInicial :: [Picture] -> [Picture] -> [Picture] -> [Picture] -> [Picture] -> [Picture] -> EstadoGloss
-estadoInicial menu jogo niveis instrucoes vitoria background = (Controlador Jogar, (0,0), menu, jogo, niveis, instrucoes, vitoria, background, 0)
+estadoInicial menu jogo niveis instrucoes vitoria background = (Controlador Jogar Theme1, (0,0), menu, jogo, niveis, instrucoes, vitoria, background, 0)
 ----------------------
 --- Desenha Estado ---
 ----------------------
@@ -274,108 +279,267 @@ draw :: EstadoGloss -> IO Picture
 --- Desenhar Parte do Menu ---
 ------------------------------
 
-draw (Controlador Jogar, (x,y), menu, jogo, _, _, _, bg,_) = 
-    return $ Pictures $ (Translate 340 (-140) (Scale 2.5 2.5 (pecas (PersonagemD, jogo) 0))) : backgrounds (OpcoesNormal, bg) : drawMenu ([[Select, Nada, Nada, Nada, Nada],[Play, Level, Tips, Theme, Exit]], menu) (0,0) 
-draw (Controlador Niveis, (x,y), menu, jogo, _, _, _,bg, _) = 
-    return $ Pictures $ (Translate 340 (-140) (Scale 2.5 2.5 (pecas (PersonagemD, jogo) 0))) : backgrounds (OpcoesNormal, bg) : drawMenu ([[Nada, Select, Nada, Nada, Nada],[Play, Level, Tips, Theme, Exit]], menu) (0,0) 
-draw (Controlador Instrucoes, (x,y), menu, jogo, _, _, _,bg, _) = 
-    return $ Pictures $ (Translate 340 (-140) (Scale 2.5 2.5 (pecas (PersonagemD, jogo) 0))) : backgrounds (OpcoesNormal, bg) : drawMenu ([[Nada, Nada, Select, Nada, Nada],[Play, Level, Tips, Theme, Exit]], menu) (0,0) 
-draw (Controlador Tema, (x,y), menu, jogo, _, _, _, bg,_) = 
-    return $ Pictures $ (Translate 340 (-140) (Scale 2.5 2.5 (pecas (PersonagemD, jogo) 0))) : backgrounds (OpcoesNormal, bg) : drawMenu ([[Nada, Nada, Nada, Select, Nada],[Play, Level, Tips, Theme, Exit]], menu) (0,0) 
-draw (Controlador Sair, (x,y), menu, jogo, _, _, _, bg,_) = 
-    return $ Pictures $ (Translate 340 (-140) (Scale 2.5 2.5 (pecas (PersonagemD, jogo) 0))) : backgrounds (OpcoesNormal, bg) : drawMenu ([[Nada, Nada, Nada, Nada, Select],[Play, Level, Tips, Theme, Exit]], menu) (0,0) 
+draw (Controlador Jogar Theme1, (x,y), menu, jogo, _, _, _, bg,_) = 
+    return $ Pictures $ (Translate 340 (-140) (Scale 2.5 2.5 (pecasN (PersonagemD, jogo) 0))) : backgroundsN (OpcoesNormal, bg) : drawMenu ([[Select, Nada, Nada, Nada, Nada],[Play, Level, Tips, Theme, Exit]], menu) (0,0) 
+draw (Controlador Niveis Theme1, (x,y), menu, jogo, _, _, _,bg, _) = 
+    return $ Pictures $ (Translate 340 (-140) (Scale 2.5 2.5 (pecasN (PersonagemD, jogo) 0))) : backgroundsN (OpcoesNormal, bg) : drawMenu ([[Nada, Select, Nada, Nada, Nada],[Play, Level, Tips, Theme, Exit]], menu) (0,0) 
+draw (Controlador Instrucoes Theme1, (x,y), menu, jogo, _, _, _,bg, _) = 
+    return $ Pictures $ (Translate 340 (-140) (Scale 2.5 2.5 (pecasN (PersonagemD, jogo) 0))) : backgroundsN (OpcoesNormal, bg) : drawMenu ([[Nada, Nada, Select, Nada, Nada],[Play, Level, Tips, Theme, Exit]], menu) (0,0) 
+draw (Controlador Tema Theme1, (x,y), menu, jogo, _, _, _, bg,_) = 
+    return $ Pictures $ (Translate 340 (-140) (Scale 2.5 2.5 (pecasN (PersonagemD, jogo) 0))) : backgroundsN (OpcoesNormal, bg) : drawMenu ([[Nada, Nada, Nada, Select, Nada],[Play, Level, Tips, Theme, Exit]], menu) (0,0) 
+draw (Controlador Sair Theme1, (x,y), menu, jogo, _, _, _, bg,_) = 
+    return $ Pictures $ (Translate 340 (-140) (Scale 2.5 2.5 (pecasN (PersonagemD, jogo) 0))) : backgroundsN (OpcoesNormal, bg) : drawMenu ([[Nada, Nada, Nada, Nada, Select],[Play, Level, Tips, Theme, Exit]], menu) (0,0) 
 
+draw (Controlador Jogar Theme2, (x,y), menu, jogo, _, _, _, bg,_) = 
+    return $ Pictures $ (Translate 400 (-160) (Scale 3.5 3.5 (pecasDB (PersonagemD, jogo) 0))) : backgroundsDB (OpcoesNormal, bg) : drawMenu ([[Select, Nada, Nada, Nada, Nada],[Play, Level, Tips, Theme, Exit]], menu) (0,0) 
+draw (Controlador Niveis Theme2, (x,y), menu, jogo, _, _, _,bg, _) = 
+    return $ Pictures $ (Translate 400 (-160) (Scale 3.5 3.5 (pecasDB (PersonagemD, jogo) 0))) : backgroundsDB (OpcoesNormal, bg) : drawMenu ([[Nada, Select, Nada, Nada, Nada],[Play, Level, Tips, Theme, Exit]], menu) (0,0) 
+draw (Controlador Instrucoes Theme2, (x,y), menu, jogo, _, _, _,bg, _) = 
+    return $ Pictures $ (Translate 400 (-160) (Scale 3.5 3.5 (pecasDB (PersonagemD, jogo) 0))) : backgroundsDB (OpcoesNormal, bg) : drawMenu ([[Nada, Nada, Select, Nada, Nada],[Play, Level, Tips, Theme, Exit]], menu) (0,0) 
+draw (Controlador Tema Theme2, (x,y), menu, jogo, _, _, _, bg,_) = 
+    return $ Pictures $ (Translate 400 (-160) (Scale 3.5 3.5 (pecasDB (PersonagemD, jogo) 0))) : backgroundsDB (OpcoesNormal, bg) : drawMenu ([[Nada, Nada, Nada, Select, Nada],[Play, Level, Tips, Theme, Exit]], menu) (0,0) 
+draw (Controlador Sair Theme2, (x,y), menu, jogo, _, _, _, bg,_) = 
+    return $ Pictures $ (Translate 400 (-160) (Scale 3.5 3.5 (pecasDB (PersonagemD, jogo) 0))) : backgroundsDB (OpcoesNormal, bg) : drawMenu ([[Nada, Nada, Nada, Nada, Select],[Play, Level, Tips, Theme, Exit]], menu) (0,0) 
+
+draw (Controlador Jogar Theme3, (x,y), menu, jogo, _, _, _, bg,_) = 
+    return $ Pictures $ backgroundsA (OpcoesNormal, bg) : (Translate 390 (-160) (Scale 3.5 3.5 (pecasA (PersonagemD, jogo) 0))) : drawMenu ([[Select, Nada, Nada, Nada, Nada],[Play, Level, Tips, Theme, Exit]], menu) (0,0) 
+draw (Controlador Niveis Theme3, (x,y), menu, jogo, _, _, _,bg, _) = 
+    return $ Pictures $ backgroundsA (OpcoesNormal, bg) : (Translate 390 (-160) (Scale 3.5 3.5 (pecasA (PersonagemD, jogo) 0))) : drawMenu ([[Nada, Select, Nada, Nada, Nada],[Play, Level, Tips, Theme, Exit]], menu) (0,0) 
+draw (Controlador Instrucoes Theme3, (x,y), menu, jogo, _, _, _,bg, _) = 
+    return $ Pictures $ backgroundsA (OpcoesNormal, bg) : (Translate 390 (-160) (Scale 3.5 3.5 (pecasA (PersonagemD, jogo) 0))) : drawMenu ([[Nada, Nada, Select, Nada, Nada],[Play, Level, Tips, Theme, Exit]], menu) (0,0) 
+draw (Controlador Tema Theme3, (x,y), menu, jogo, _, _, _, bg,_) = 
+    return $ Pictures $ backgroundsA (OpcoesNormal, bg) : (Translate 390 (-160) (Scale 3.5 3.5 (pecasA (PersonagemD, jogo) 0))) : drawMenu ([[Nada, Nada, Nada, Select, Nada],[Play, Level, Tips, Theme, Exit]], menu) (0,0) 
+draw (Controlador Sair Theme3, (x,y), menu, jogo, _, _, _, bg,_) = 
+    return $ Pictures $ backgroundsA (OpcoesNormal, bg) : (Translate 390 (-160) (Scale 3.5 3.5 (pecasA (PersonagemD, jogo) 0))) : drawMenu ([[Nada, Nada, Nada, Nada, Select],[Play, Level, Tips, Theme, Exit]], menu) (0,0) 
 ------------------------------
 --- Desenhar Parte do Jogo ---
 ------------------------------
 
-draw (ModoJogo game reload lvl, (x,y), _, jogo, _, _, _, bg,b) = 
-    return $ Pictures $ backgrounds (GameNormal, bg) : (drawMapa (getMap game, jogo) (0,0) b) ++ (getPlayer game)
+draw (ModoJogo game reload lvl Theme1, (x,y), _, jogo, _, _, _, bg,b) = 
+    return $ Pictures $ backgroundsN (GameNormal, bg) : (drawMapaN (getMap game, jogo) (0,0) b) ++ (getPlayer game)
     where getMap (Jogo mapa (Jogador (x,y) w bool)) = mapa
-          getPlayer (Jogo mapa (Jogador (x,y) Oeste False)) = drawPlayer ([PersonagemE], (x,y), jogo) b
-          getPlayer (Jogo mapa (Jogador (x,y) Este False)) = drawPlayer ([PersonagemD], (x,y), jogo) b
-          getPlayer (Jogo mapa (Jogador (x,y) Oeste True)) = drawPlayer ([Caixa,PersonagemE], (x,y-1), jogo) b
-          getPlayer (Jogo mapa (Jogador (x,y) Este True)) = drawPlayer ([Caixa,PersonagemD], (x,y-1), jogo) b
+          getPlayer (Jogo mapa (Jogador (x,y) Oeste False)) = drawPlayerN ([PersonagemE], (x,y), jogo) b
+          getPlayer (Jogo mapa (Jogador (x,y) Este False)) = drawPlayerN ([PersonagemD], (x,y), jogo) b
+          getPlayer (Jogo mapa (Jogador (x,y) Oeste True)) = drawPlayerN ([Caixa,PersonagemE], (x,y-1), jogo) b
+          getPlayer (Jogo mapa (Jogador (x,y) Este True)) = drawPlayerN ([Caixa,PersonagemD], (x,y-1), jogo) b
+
+draw (ModoJogo game reload lvl Theme2, (x,y), _, jogo, _, _, _, bg,b) = 
+    return $ Pictures $ backgroundsDB (GameNormal, bg) : (drawMapaDB (getMap game, jogo) (0,0) b) ++ (getPlayer game)
+    where getMap (Jogo mapa (Jogador (x,y) w bool)) = mapa
+          getPlayer (Jogo mapa (Jogador (x,y) Oeste False)) = drawPlayerDB ([PersonagemE], (x,y), jogo) b
+          getPlayer (Jogo mapa (Jogador (x,y) Este False)) = drawPlayerDB ([PersonagemD], (x,y), jogo) b
+          getPlayer (Jogo mapa (Jogador (x,y) Oeste True)) = drawPlayerDB ([Caixa,PersonagemE], (x,y-1), jogo) b
+          getPlayer (Jogo mapa (Jogador (x,y) Este True)) = drawPlayerDB ([Caixa,PersonagemD], (x,y-1), jogo) b
+
+draw (ModoJogo game reload lvl Theme3, (x,y), _, jogo, _, _, _, bg,b) = 
+    return $ Pictures $ backgroundsA (GameNormal, bg) : (drawMapaA (getMap game, jogo) (0,0) b) ++ (getPlayer game)
+    where getMap (Jogo mapa (Jogador (x,y) w bool)) = mapa
+          getPlayer (Jogo mapa (Jogador (x,y) Oeste False)) = drawPlayerA ([PersonagemE], (x,y), jogo) b
+          getPlayer (Jogo mapa (Jogador (x,y) Este False)) = drawPlayerA ([PersonagemD], (x,y), jogo) b
+          getPlayer (Jogo mapa (Jogador (x,y) Oeste True)) = drawPlayerA ([Caixa,PersonagemE], (x,y-1), jogo) b
+          getPlayer (Jogo mapa (Jogador (x,y) Este True)) = drawPlayerA ([Caixa,PersonagemD], (x,y-1), jogo) b
 
 -----------------------
 --- Desenhar Niveis ---
 ----------------------- 
 
-draw (Selecionador Nivel1, (x,y), _, _, niveis, _, _, bg,_) =
-    return $ Pictures $ levels (Show1 , niveis) : backgrounds (NiveisNormal, bg) : drawNiveis ([[Select, Nada, Nada, Nada, Nada], [Lvl1, Lvl2, Lvl3, Lvl4, Lvl5],
+draw (Selecionador Nivel1 Theme1, (x,y), _, _, niveis, _, _, bg,_) =
+    return $ Pictures $ levels (Show1 , niveis) : backgroundsN (NiveisNormal, bg) : drawNiveis ([[Select, Nada, Nada, Nada, Nada], [Lvl1, Lvl2, Lvl3, Lvl4, Lvl5],
                                                                                                 [Nada, Nada, Nada, Nada, Nada], [Lvl6, Lvl7, Lvl8, Lvl9, Lvl10],[Nada,Nada,Nada],[Nada,Nada,Back]], niveis) (0,0) 
-draw (Selecionador Nivel2, (x,y), _, _, niveis, _, _, bg,_) =
-    return $ Pictures $ levels (Show2 , niveis) : backgrounds (NiveisNormal, bg) : drawNiveis ([[Nada, Select, Nada, Nada, Nada], [Lvl1, Lvl2, Lvl3, Lvl4, Lvl5],
+draw (Selecionador Nivel2 Theme1, (x,y), _, _, niveis, _, _, bg,_) =
+    return $ Pictures $ levels (Show2 , niveis) : backgroundsN (NiveisNormal, bg) : drawNiveis ([[Nada, Select, Nada, Nada, Nada], [Lvl1, Lvl2, Lvl3, Lvl4, Lvl5],
                                                                                                 [Nada, Nada, Nada, Nada, Nada], [Lvl6, Lvl7, Lvl8, Lvl9, Lvl10],[Nada,Nada,Nada],[Nada,Nada,Back]], niveis) (0,0) 
-draw (Selecionador Nivel3, (x,y), _, _, niveis, _, _,bg, _) =
-    return $ Pictures $ levels (Show3 , niveis) : backgrounds (NiveisNormal, bg) : drawNiveis ([[Nada, Nada, Select, Nada, Nada], [Lvl1, Lvl2, Lvl3, Lvl4, Lvl5],
+draw (Selecionador Nivel3 Theme1, (x,y), _, _, niveis, _, _,bg, _) =
+    return $ Pictures $ levels (Show3 , niveis) : backgroundsN (NiveisNormal, bg) : drawNiveis ([[Nada, Nada, Select, Nada, Nada], [Lvl1, Lvl2, Lvl3, Lvl4, Lvl5],
                                                                                                 [Nada, Nada, Nada, Nada, Nada], [Lvl6, Lvl7, Lvl8, Lvl9, Lvl10],[Nada,Nada,Nada],[Nada,Nada,Back]], niveis) (0,0) 
-draw (Selecionador Nivel4, (x,y), _, _, niveis, _, _, bg,_) =
-    return $ Pictures $ levels (Show4 , niveis) : backgrounds (NiveisNormal, bg) : drawNiveis ([[Nada, Nada, Nada, Select, Nada], [Lvl1, Lvl2, Lvl3, Lvl4, Lvl5],
+draw (Selecionador Nivel4 Theme1, (x,y), _, _, niveis, _, _, bg,_) =
+    return $ Pictures $ levels (Show4 , niveis) : backgroundsN (NiveisNormal, bg) : drawNiveis ([[Nada, Nada, Nada, Select, Nada], [Lvl1, Lvl2, Lvl3, Lvl4, Lvl5],
                                                                                                 [Nada, Nada, Nada, Nada, Nada], [Lvl6, Lvl7, Lvl8, Lvl9, Lvl10],[Nada,Nada,Nada],[Nada,Nada,Back]], niveis) (0,0) 
-draw (Selecionador Nivel5, (x,y), _, _, niveis, _, _, bg,_) =
-    return $ Pictures $ levels (Show5 , niveis) : backgrounds (NiveisNormal, bg) : drawNiveis ([[Nada, Nada, Nada, Nada, Select], [Lvl1, Lvl2, Lvl3, Lvl4, Lvl5],
+draw (Selecionador Nivel5 Theme1, (x,y), _, _, niveis, _, _, bg,_) =
+    return $ Pictures $ levels (Show5 , niveis) : backgroundsN (NiveisNormal, bg) : drawNiveis ([[Nada, Nada, Nada, Nada, Select], [Lvl1, Lvl2, Lvl3, Lvl4, Lvl5],
                                                                                                 [Nada, Nada, Nada, Nada, Nada], [Lvl6, Lvl7, Lvl8, Lvl9, Lvl10],[Nada,Nada,Nada],[Nada,Nada,Back]], niveis) (0,0) 
-draw (Selecionador Nivel6, (x,y), _, _, niveis, _, _, bg,_) =
-    return $ Pictures $ levels (Show6 , niveis) : backgrounds (NiveisNormal, bg) : drawNiveis ([[Nada, Nada, Nada, Nada, Nada], [Lvl1, Lvl2, Lvl3, Lvl4, Lvl5],
+draw (Selecionador Nivel6 Theme1, (x,y), _, _, niveis, _, _, bg,_) =
+    return $ Pictures $ levels (Show6 , niveis) : backgroundsN (NiveisNormal, bg) : drawNiveis ([[Nada, Nada, Nada, Nada, Nada], [Lvl1, Lvl2, Lvl3, Lvl4, Lvl5],
                                                                                                 [Select, Nada, Nada, Nada, Nada], [Lvl6, Lvl7, Lvl8, Lvl9, Lvl10],[Nada,Nada,Nada],[Nada,Nada,Back]], niveis) (0,0) 
-draw (Selecionador Nivel7, (x,y), _, _, niveis, _, _, bg,_) =
-    return $ Pictures $ levels (Show7 , niveis) : backgrounds (NiveisNormal, bg) : drawNiveis ([[Nada, Nada, Nada, Nada, Nada], [Lvl1, Lvl2, Lvl3, Lvl4, Lvl5],
+draw (Selecionador Nivel7 Theme1, (x,y), _, _, niveis, _, _, bg,_) =
+    return $ Pictures $ levels (Show7 , niveis) : backgroundsN (NiveisNormal, bg) : drawNiveis ([[Nada, Nada, Nada, Nada, Nada], [Lvl1, Lvl2, Lvl3, Lvl4, Lvl5],
                                                                                                 [Nada, Select, Nada, Nada, Nada], [Lvl6, Lvl7, Lvl8, Lvl9, Lvl10],[Nada,Nada,Nada],[Nada,Nada,Back]], niveis) (0,0) 
-draw (Selecionador Nivel8, (x,y), _, _, niveis, _, _, bg,_) =
-    return $ Pictures $ levels (Show8 , niveis) : backgrounds (NiveisNormal, bg) : drawNiveis ([[Nada, Nada, Nada, Nada, Nada], [Lvl1, Lvl2, Lvl3, Lvl4, Lvl5],
+draw (Selecionador Nivel8 Theme1, (x,y), _, _, niveis, _, _, bg,_) =
+    return $ Pictures $ levels (Show8 , niveis) : backgroundsN (NiveisNormal, bg) : drawNiveis ([[Nada, Nada, Nada, Nada, Nada], [Lvl1, Lvl2, Lvl3, Lvl4, Lvl5],
                                                                                                 [Nada, Nada, Select, Nada, Nada], [Lvl6, Lvl7, Lvl8, Lvl9, Lvl10],[Nada,Nada,Nada],[Nada,Nada,Back]], niveis) (0,0) 
-draw (Selecionador Nivel9, (x,y), _, _, niveis, _, _, bg,_) =
-    return $ Pictures $ levels (Show9 , niveis) : backgrounds (NiveisNormal, bg) : drawNiveis ([[Nada, Nada, Nada, Nada, Nada], [Lvl1, Lvl2, Lvl3, Lvl4, Lvl5],
+draw (Selecionador Nivel9 Theme1, (x,y), _, _, niveis, _, _, bg,_) =
+    return $ Pictures $ levels (Show9 , niveis) : backgroundsN (NiveisNormal, bg) : drawNiveis ([[Nada, Nada, Nada, Nada, Nada], [Lvl1, Lvl2, Lvl3, Lvl4, Lvl5],
                                                                                                 [Nada, Nada, Nada, Select, Nada], [Lvl6, Lvl7, Lvl8, Lvl9, Lvl10],[Nada,Nada,Nada],[Nada,Nada,Back]], niveis) (0,0) 
-draw (Selecionador Nivel10, (x,y), _, _, niveis, _, _, bg,_) =
-    return $ Pictures $ levels (Show10 , niveis) : backgrounds (NiveisNormal, bg) : drawNiveis ([[Nada, Nada, Nada, Nada, Nada], [Lvl1, Lvl2, Lvl3, Lvl4, Lvl5],
+draw (Selecionador Nivel10 Theme1, (x,y), _, _, niveis, _, _, bg,_) =
+    return $ Pictures $ levels (Show10 , niveis) : backgroundsN (NiveisNormal, bg) : drawNiveis ([[Nada, Nada, Nada, Nada, Nada], [Lvl1, Lvl2, Lvl3, Lvl4, Lvl5],
                                                                                                 [Nada, Nada, Nada, Nada, Select], [Lvl6, Lvl7, Lvl8, Lvl9, Lvl10],[Nada,Nada,Nada],[Nada,Nada,Back]], niveis) (0,0) 
-draw (Selecionador Voltar, (x,y), _, _, niveis, _, _, bg,_) =
-    return $ Pictures $ backgrounds (NiveisNormal, bg) : drawNiveis ([[Nada, Nada, Nada, Nada, Nada], [Lvl1, Lvl2, Lvl3, Lvl4, Lvl5],
+draw (Selecionador Voltar Theme1, (x,y), _, _, niveis, _, _, bg,_) =
+    return $ Pictures $ backgroundsN (NiveisNormal, bg) : drawNiveis ([[Nada, Nada, Nada, Nada, Nada], [Lvl1, Lvl2, Lvl3, Lvl4, Lvl5],
+                                                                      [Nada, Nada, Nada, Nada, Nada], [Lvl6, Lvl7, Lvl8, Lvl9, Lvl10],[Nada,Nada,Select],[Nada,Nada,Back]], niveis) (0,0) 
+
+draw (Selecionador Nivel1 Theme2, (x,y), _, _, niveis, _, _, bg,_) =
+    return $ Pictures $ (Translate (20) (-10) (levels (Show1 , niveis))) : backgroundsDB (NiveisNormal, bg) : drawNiveis ([[Select, Nada, Nada, Nada, Nada], [Lvl1, Lvl2, Lvl3, Lvl4, Lvl5],
+                                                                                                [Nada, Nada, Nada, Nada, Nada], [Lvl6, Lvl7, Lvl8, Lvl9, Lvl10],[Nada,Nada,Nada],[Nada,Nada,Back]], niveis) (0,0) 
+draw (Selecionador Nivel2 Theme2, (x,y), _, _, niveis, _, _, bg,_) =
+    return $ Pictures $ (Translate (20) (-10) (levels (Show2 , niveis))) : backgroundsDB (NiveisNormal, bg) : drawNiveis ([[Nada, Select, Nada, Nada, Nada], [Lvl1, Lvl2, Lvl3, Lvl4, Lvl5],
+                                                                                                [Nada, Nada, Nada, Nada, Nada], [Lvl6, Lvl7, Lvl8, Lvl9, Lvl10],[Nada,Nada,Nada],[Nada,Nada,Back]], niveis) (0,0) 
+draw (Selecionador Nivel3 Theme2, (x,y), _, _, niveis, _, _,bg, _) =
+    return $ Pictures $ (Translate (20) (-10) (levels (Show3 , niveis))) : backgroundsDB (NiveisNormal, bg) : drawNiveis ([[Nada, Nada, Select, Nada, Nada], [Lvl1, Lvl2, Lvl3, Lvl4, Lvl5],
+                                                                                                [Nada, Nada, Nada, Nada, Nada], [Lvl6, Lvl7, Lvl8, Lvl9, Lvl10],[Nada,Nada,Nada],[Nada,Nada,Back]], niveis) (0,0) 
+draw (Selecionador Nivel4 Theme2, (x,y), _, _, niveis, _, _, bg,_) =
+    return $ Pictures $ (Translate (20) (-10) (levels (Show4 , niveis))) : backgroundsDB (NiveisNormal, bg) : drawNiveis ([[Nada, Nada, Nada, Select, Nada], [Lvl1, Lvl2, Lvl3, Lvl4, Lvl5],
+                                                                                                [Nada, Nada, Nada, Nada, Nada], [Lvl6, Lvl7, Lvl8, Lvl9, Lvl10],[Nada,Nada,Nada],[Nada,Nada,Back]], niveis) (0,0) 
+draw (Selecionador Nivel5 Theme2, (x,y), _, _, niveis, _, _, bg,_) =
+    return $ Pictures $ (Translate (20) (-10) (levels (Show5 , niveis))) : backgroundsDB (NiveisNormal, bg) : drawNiveis ([[Nada, Nada, Nada, Nada, Select], [Lvl1, Lvl2, Lvl3, Lvl4, Lvl5],
+                                                                                                [Nada, Nada, Nada, Nada, Nada], [Lvl6, Lvl7, Lvl8, Lvl9, Lvl10],[Nada,Nada,Nada],[Nada,Nada,Back]], niveis) (0,0) 
+draw (Selecionador Nivel6 Theme2, (x,y), _, _, niveis, _, _, bg,_) =
+    return $ Pictures $ (Translate (20) (-10) (levels (Show6 , niveis))) : backgroundsDB (NiveisNormal, bg) : drawNiveis ([[Nada, Nada, Nada, Nada, Nada], [Lvl1, Lvl2, Lvl3, Lvl4, Lvl5],
+                                                                                                [Select, Nada, Nada, Nada, Nada], [Lvl6, Lvl7, Lvl8, Lvl9, Lvl10],[Nada,Nada,Nada],[Nada,Nada,Back]], niveis) (0,0) 
+draw (Selecionador Nivel7 Theme2, (x,y), _, _, niveis, _, _, bg,_) =
+    return $ Pictures $ (Translate (20) (-10) (levels (Show7 , niveis))) : backgroundsDB (NiveisNormal, bg) : drawNiveis ([[Nada, Nada, Nada, Nada, Nada], [Lvl1, Lvl2, Lvl3, Lvl4, Lvl5],
+                                                                                                [Nada, Select, Nada, Nada, Nada], [Lvl6, Lvl7, Lvl8, Lvl9, Lvl10],[Nada,Nada,Nada],[Nada,Nada,Back]], niveis) (0,0) 
+draw (Selecionador Nivel8 Theme2, (x,y), _, _, niveis, _, _, bg,_) =
+    return $ Pictures $ (Translate (20) (-10) (levels (Show8 , niveis))) : backgroundsDB (NiveisNormal, bg) : drawNiveis ([[Nada, Nada, Nada, Nada, Nada], [Lvl1, Lvl2, Lvl3, Lvl4, Lvl5],
+                                                                                                [Nada, Nada, Select, Nada, Nada], [Lvl6, Lvl7, Lvl8, Lvl9, Lvl10],[Nada,Nada,Nada],[Nada,Nada,Back]], niveis) (0,0) 
+draw (Selecionador Nivel9 Theme2, (x,y), _, _, niveis, _, _, bg,_) =
+    return $ Pictures $ (Translate (20) (-10) (levels (Show9 , niveis))) : backgroundsDB (NiveisNormal, bg) : drawNiveis ([[Nada, Nada, Nada, Nada, Nada], [Lvl1, Lvl2, Lvl3, Lvl4, Lvl5],
+                                                                                                [Nada, Nada, Nada, Select, Nada], [Lvl6, Lvl7, Lvl8, Lvl9, Lvl10],[Nada,Nada,Nada],[Nada,Nada,Back]], niveis) (0,0) 
+draw (Selecionador Nivel10 Theme2, (x,y), _, _, niveis, _, _, bg,_) =
+    return $ Pictures $ (Translate (20) (-10) (levels (Show10 , niveis))) : backgroundsDB (NiveisNormal, bg) : drawNiveis ([[Nada, Nada, Nada, Nada, Nada], [Lvl1, Lvl2, Lvl3, Lvl4, Lvl5],
+                                                                                                [Nada, Nada, Nada, Nada, Select], [Lvl6, Lvl7, Lvl8, Lvl9, Lvl10],[Nada,Nada,Nada],[Nada,Nada,Back]], niveis) (0,0) 
+draw (Selecionador Voltar Theme2, (x,y), _, _, niveis, _, _, bg,_) =
+    return $ Pictures $ backgroundsDB (NiveisNormal, bg) : drawNiveis ([[Nada, Nada, Nada, Nada, Nada], [Lvl1, Lvl2, Lvl3, Lvl4, Lvl5],
+                                                                      [Nada, Nada, Nada, Nada, Nada], [Lvl6, Lvl7, Lvl8, Lvl9, Lvl10],[Nada,Nada,Select],[Nada,Nada,Back]], niveis) (0,0) 
+
+draw (Selecionador Nivel1 Theme3, (x,y), _, _, niveis, _, _, bg,_) =
+    return $ Pictures $ backgroundsA (NiveisNormal, bg) : (Translate 15 (-30) (levels (Show1 , niveis))) : drawNiveis ([[Select, Nada, Nada, Nada, Nada], [Lvl1, Lvl2, Lvl3, Lvl4, Lvl5],
+                                                                                                [Nada, Nada, Nada, Nada, Nada], [Lvl6, Lvl7, Lvl8, Lvl9, Lvl10],[Nada,Nada,Nada],[Nada,Nada,Back]], niveis) (0,0) 
+draw (Selecionador Nivel2 Theme3, (x,y), _, _, niveis, _, _, bg,_) =
+    return $ Pictures $ backgroundsA (NiveisNormal, bg) : (Translate 15 (-30) (levels (Show2 , niveis))) : drawNiveis ([[Nada, Select, Nada, Nada, Nada], [Lvl1, Lvl2, Lvl3, Lvl4, Lvl5],
+                                                                                                [Nada, Nada, Nada, Nada, Nada], [Lvl6, Lvl7, Lvl8, Lvl9, Lvl10],[Nada,Nada,Nada],[Nada,Nada,Back]], niveis) (0,0) 
+draw (Selecionador Nivel3 Theme3, (x,y), _, _, niveis, _, _,bg, _) =
+    return $ Pictures $ backgroundsA (NiveisNormal, bg) : (Translate 15 (-30) (levels (Show3 , niveis))) : drawNiveis ([[Nada, Nada, Select, Nada, Nada], [Lvl1, Lvl2, Lvl3, Lvl4, Lvl5],
+                                                                                                [Nada, Nada, Nada, Nada, Nada], [Lvl6, Lvl7, Lvl8, Lvl9, Lvl10],[Nada,Nada,Nada],[Nada,Nada,Back]], niveis) (0,0) 
+draw (Selecionador Nivel4 Theme3, (x,y), _, _, niveis, _, _, bg,_) =
+    return $ Pictures $ backgroundsA (NiveisNormal, bg) : (Translate 15 (-30) (levels (Show4 , niveis))) : drawNiveis ([[Nada, Nada, Nada, Select, Nada], [Lvl1, Lvl2, Lvl3, Lvl4, Lvl5],
+                                                                                                [Nada, Nada, Nada, Nada, Nada], [Lvl6, Lvl7, Lvl8, Lvl9, Lvl10],[Nada,Nada,Nada],[Nada,Nada,Back]], niveis) (0,0) 
+draw (Selecionador Nivel5 Theme3, (x,y), _, _, niveis, _, _, bg,_) =
+    return $ Pictures $ backgroundsA (NiveisNormal, bg) : (Translate 15 (-30) (levels (Show5 , niveis))) : drawNiveis ([[Nada, Nada, Nada, Nada, Select], [Lvl1, Lvl2, Lvl3, Lvl4, Lvl5],
+                                                                                                [Nada, Nada, Nada, Nada, Nada], [Lvl6, Lvl7, Lvl8, Lvl9, Lvl10],[Nada,Nada,Nada],[Nada,Nada,Back]], niveis) (0,0) 
+draw (Selecionador Nivel6 Theme3, (x,y), _, _, niveis, _, _, bg,_) =
+    return $ Pictures $ backgroundsA (NiveisNormal, bg) : (Translate 15 (-30) (levels (Show6 , niveis))) : drawNiveis ([[Nada, Nada, Nada, Nada, Nada], [Lvl1, Lvl2, Lvl3, Lvl4, Lvl5],
+                                                                                                [Select, Nada, Nada, Nada, Nada], [Lvl6, Lvl7, Lvl8, Lvl9, Lvl10],[Nada,Nada,Nada],[Nada,Nada,Back]], niveis) (0,0) 
+draw (Selecionador Nivel7 Theme3, (x,y), _, _, niveis, _, _, bg,_) =
+    return $ Pictures $ backgroundsA (NiveisNormal, bg) : (Translate 15 (-30) (levels (Show7 , niveis))) : drawNiveis ([[Nada, Nada, Nada, Nada, Nada], [Lvl1, Lvl2, Lvl3, Lvl4, Lvl5],
+                                                                                                [Nada, Select, Nada, Nada, Nada], [Lvl6, Lvl7, Lvl8, Lvl9, Lvl10],[Nada,Nada,Nada],[Nada,Nada,Back]], niveis) (0,0) 
+draw (Selecionador Nivel8 Theme3, (x,y), _, _, niveis, _, _, bg,_) =
+    return $ Pictures $ backgroundsA (NiveisNormal, bg) : (Translate 15 (-30) (levels (Show8 , niveis))) : drawNiveis ([[Nada, Nada, Nada, Nada, Nada], [Lvl1, Lvl2, Lvl3, Lvl4, Lvl5],
+                                                                                                [Nada, Nada, Select, Nada, Nada], [Lvl6, Lvl7, Lvl8, Lvl9, Lvl10],[Nada,Nada,Nada],[Nada,Nada,Back]], niveis) (0,0) 
+draw (Selecionador Nivel9 Theme3, (x,y), _, _, niveis, _, _, bg,_) =
+    return $ Pictures $ backgroundsA (NiveisNormal, bg) : (Translate 15 (-30) (levels (Show9 , niveis))) : drawNiveis ([[Nada, Nada, Nada, Nada, Nada], [Lvl1, Lvl2, Lvl3, Lvl4, Lvl5],
+                                                                                                [Nada, Nada, Nada, Select, Nada], [Lvl6, Lvl7, Lvl8, Lvl9, Lvl10],[Nada,Nada,Nada],[Nada,Nada,Back]], niveis) (0,0) 
+draw (Selecionador Nivel10 Theme3, (x,y), _, _, niveis, _, _, bg,_) =
+    return $ Pictures $ backgroundsA (NiveisNormal, bg) : (Translate 15 (-30) (levels (Show10 , niveis))) : drawNiveis ([[Nada, Nada, Nada, Nada, Nada], [Lvl1, Lvl2, Lvl3, Lvl4, Lvl5],
+                                                                                                [Nada, Nada, Nada, Nada, Select], [Lvl6, Lvl7, Lvl8, Lvl9, Lvl10],[Nada,Nada,Nada],[Nada,Nada,Back]], niveis) (0,0) 
+draw (Selecionador Voltar Theme3, (x,y), _, _, niveis, _, _, bg,_) =
+    return $ Pictures $ backgroundsA (NiveisNormal, bg) : drawNiveis ([[Nada, Nada, Nada, Nada, Nada], [Lvl1, Lvl2, Lvl3, Lvl4, Lvl5],
                                                                       [Nada, Nada, Nada, Nada, Nada], [Lvl6, Lvl7, Lvl8, Lvl9, Lvl10],[Nada,Nada,Select],[Nada,Nada,Back]], niveis) (0,0) 
 
 --------------------------
 --- Desenhar Intrucoes ---
 --------------------------
 
-draw (Pergaminho, (x,y), _, _, _, instrucoes, _, bg,_) = 
-    return $ Pictures $ backgrounds (GameNormal, bg) : drawInstrucoes ([Tips, Texto, Back, Select], instrucoes) 0
+draw (Pergaminho Theme1, (x,y), _, _, _, instrucoes, _, bg,_) = 
+    return $ Pictures $ backgroundsN (GameNormal, bg) : drawInstrucoes ([Tips, Texto, Back, Select], instrucoes) 0
+
+draw (Pergaminho Theme2, (x,y), _, _, _, instrucoes, _, bg,_) = 
+    return $ Pictures $ backgroundsDB (GameNormal, bg) : drawInstrucoes ([Tips, Texto, Back, Select], instrucoes) 0
+
+draw (Pergaminho Theme3, (x,y), _, _, _, instrucoes, _, bg,_) = 
+    return $ Pictures $ backgroundsA (GameNormal, bg) : drawInstrucoes ([Tips, Texto, Back, Select], instrucoes) 0
 
 ------------------------
 --- Desenhar Vitoria ---
 ------------------------
 
-draw (ImagemVitoria Continuar _ _, (x,y), _, _, _, _, vitoria, bg,b) 
+draw (ImagemVitoria Continuar _ _ Theme1, (x,y), _, _, _, _, vitoria, bg,b) 
     | mod (round (b*90)) 200 < 100 = 
-        return $ Pictures $ backgrounds (GameNormal, bg) : drawVitoria ([[Nada, Select, Nada, Nada],[WinCima, Continue, Level, Exit]], vitoria) (0,0) 
+        return $ Pictures $ backgroundsN (GameNormal, bg) : drawVitoria ([[Nada, Select, Nada, Nada],[WinCima, Continue, Level, Exit]], vitoria) (0,0) 
     | otherwise = 
-        return $ Pictures $ backgrounds (GameNormal, bg) : drawVitoria ([[Nada, Select, Nada, Nada],[WinBaixo, Continue, Level, Exit]], vitoria) (0,0) 
-draw (ImagemVitoria Niveis _ _, (x,y), _, _, _, _, vitoria,bg, b) 
+        return $ Pictures $ backgroundsN (GameNormal, bg) : drawVitoria ([[Nada, Select, Nada, Nada],[WinBaixo, Continue, Level, Exit]], vitoria) (0,0) 
+draw (ImagemVitoria Niveis _ _ Theme1, (x,y), _, _, _, _, vitoria,bg, b) 
     | mod (round (b*90)) 200 < 100 = 
-        return $ Pictures $ backgrounds (GameNormal, bg) : drawVitoria ([[Nada, Nada, Select, Nada],[WinCima, Continue, Level, Exit]], vitoria) (0,0)
+        return $ Pictures $ backgroundsN (GameNormal, bg) : drawVitoria ([[Nada, Nada, Select, Nada],[WinCima, Continue, Level, Exit]], vitoria) (0,0)
     | otherwise = 
-        return $ Pictures $ backgrounds (GameNormal, bg) : drawVitoria ([[Nada, Nada, Select, Nada],[WinBaixo, Continue, Level, Exit]], vitoria) (0,0)
-draw (ImagemVitoria Sair _ _, (x,y), _, _, _, _, vitoria, bg,b) 
+        return $ Pictures $ backgroundsN (GameNormal, bg) : drawVitoria ([[Nada, Nada, Select, Nada],[WinBaixo, Continue, Level, Exit]], vitoria) (0,0)
+draw (ImagemVitoria Sair _ _ Theme1, (x,y), _, _, _, _, vitoria, bg,b) 
     | mod (round (b*90)) 200 < 100 = 
-        return $ Pictures $ backgrounds (GameNormal, bg) : drawVitoria ([[Nada, Nada, Nada, Select],[WinCima, Continue, Level, Exit]], vitoria) (0,0) 
+        return $ Pictures $ backgroundsN (GameNormal, bg) : drawVitoria ([[Nada, Nada, Nada, Select],[WinCima, Continue, Level, Exit]], vitoria) (0,0) 
     | otherwise = 
-        return $ Pictures $ backgrounds (GameNormal, bg) : drawVitoria ([[Nada, Nada, Nada, Select],[WinBaixo, Continue, Level, Exit]], vitoria) (0,0) 
+        return $ Pictures $ backgroundsN (GameNormal, bg) : drawVitoria ([[Nada, Nada, Nada, Select],[WinBaixo, Continue, Level, Exit]], vitoria) (0,0) 
+
+draw (ImagemVitoria Continuar _ _ Theme2, (x,y), _, _, _, _, vitoria, bg,b) 
+    | mod (round (b*90)) 200 < 100 = 
+        return $ Pictures $ backgroundsDB (GameNormal, bg) : drawVitoria ([[Nada, Select, Nada, Nada],[WinCima, Continue, Level, Exit]], vitoria) (0,0) 
+    | otherwise = 
+        return $ Pictures $ backgroundsDB (GameNormal, bg) : drawVitoria ([[Nada, Select, Nada, Nada],[WinBaixo, Continue, Level, Exit]], vitoria) (0,0) 
+draw (ImagemVitoria Niveis _ _ Theme2, (x,y), _, _, _, _, vitoria,bg, b) 
+    | mod (round (b*90)) 200 < 100 = 
+        return $ Pictures $ backgroundsDB (GameNormal, bg) : drawVitoria ([[Nada, Nada, Select, Nada],[WinCima, Continue, Level, Exit]], vitoria) (0,0)
+    | otherwise = 
+        return $ Pictures $ backgroundsDB (GameNormal, bg) : drawVitoria ([[Nada, Nada, Select, Nada],[WinBaixo, Continue, Level, Exit]], vitoria) (0,0)
+draw (ImagemVitoria Sair _ _ Theme2, (x,y), _, _, _, _, vitoria, bg,b) 
+    | mod (round (b*90)) 200 < 100 = 
+        return $ Pictures $ backgroundsDB (GameNormal, bg) : drawVitoria ([[Nada, Nada, Nada, Select],[WinCima, Continue, Level, Exit]], vitoria) (0,0) 
+    | otherwise = 
+        return $ Pictures $ backgroundsDB (GameNormal, bg) : drawVitoria ([[Nada, Nada, Nada, Select],[WinBaixo, Continue, Level, Exit]], vitoria) (0,0) 
+
+draw (ImagemVitoria Continuar _ _ Theme3, (x,y), _, _, _, _, vitoria, bg,b) 
+    | mod (round (b*90)) 200 < 100 = 
+        return $ Pictures $ backgroundsA (GameNormal, bg) : drawVitoria ([[Nada, Select, Nada, Nada],[WinCima, Continue, Level, Exit]], vitoria) (0,0) 
+    | otherwise = 
+        return $ Pictures $ backgroundsA (GameNormal, bg) : drawVitoria ([[Nada, Select, Nada, Nada],[WinBaixo, Continue, Level, Exit]], vitoria) (0,0) 
+draw (ImagemVitoria Niveis _ _ Theme3, (x,y), _, _, _, _, vitoria,bg, b) 
+    | mod (round (b*90)) 200 < 100 = 
+        return $ Pictures $ backgroundsA (GameNormal, bg) : drawVitoria ([[Nada, Nada, Select, Nada],[WinCima, Continue, Level, Exit]], vitoria) (0,0)
+    | otherwise = 
+        return $ Pictures $ backgroundsA (GameNormal, bg) : drawVitoria ([[Nada, Nada, Select, Nada],[WinBaixo, Continue, Level, Exit]], vitoria) (0,0)
+draw (ImagemVitoria Sair _ _ Theme3, (x,y), _, _, _, _, vitoria, bg,b) 
+    | mod (round (b*90)) 200 < 100 = 
+        return $ Pictures $ backgroundsA (GameNormal, bg) : drawVitoria ([[Nada, Nada, Nada, Select],[WinCima, Continue, Level, Exit]], vitoria) (0,0) 
+    | otherwise = 
+        return $ Pictures $ backgroundsA (GameNormal, bg) : drawVitoria ([[Nada, Nada, Nada, Select],[WinBaixo, Continue, Level, Exit]], vitoria) (0,0) 
 
 ----------------------
 --- Desenhar Temas ---
 ----------------------
 
-draw (Temas BlockDude, _, menu, _, _, _, _, bg, _) = 
-    return $ Pictures $ backgrounds (GameNormal, bg) : drawMenu ([[Select, Nada, Nada, Nada],[BlockDude, DragonBall, AmongUs, Back]], menu) (0,0)
-draw (Temas DragonBall, _, menu, _, _, _, _, bg, _) = 
-    return $ Pictures $ backgrounds (GameNormal, bg) : drawMenu ([[Nada, Select, Nada, Nada],[BlockDude, DragonBall, AmongUs, Back]], menu) (0,0)
-draw (Temas AmongUs, _, menu, _, _, _, _, bg, _) = 
-    return $ Pictures $ backgrounds (GameNormal, bg) : drawMenu ([[Nada, Nada, Select, Nada],[BlockDude, DragonBall, AmongUs, Back]], menu) (0,0)
-draw (Temas Back, _, menu, _, _, _, _, bg, _) = 
-    return $ Pictures $ backgrounds (GameNormal, bg) : drawMenu ([[Nada, Nada, Nada, Select],[BlockDude, DragonBall, AmongUs, Back]], menu) (0,0)
+draw (Temas BlockDude Theme1, _, menu, _, _, _, _, bg, _) = 
+    return $ Pictures $ backgroundsN (GameNormal, bg) : opcoes (NTheme, menu) : drawMenu ([[Select, Nada, Nada, Nada],[BlockDude, DragonBall, AmongUs, Back]], menu) (0,0)
+draw (Temas DragonBall Theme1, _, menu, _, _, _, _, bg, _) = 
+    return $ Pictures $ backgroundsN (GameNormal, bg) : opcoes (DBTheme, menu) : drawMenu ([[Nada, Select, Nada, Nada],[BlockDude, DragonBall, AmongUs, Back]], menu) (0,0)
+draw (Temas AmongUs Theme1, _, menu, _, _, _, _, bg, _) = 
+    return $ Pictures $ backgroundsN (GameNormal, bg) : opcoes (ATheme, menu) : drawMenu ([[Nada, Nada, Select, Nada],[BlockDude, DragonBall, AmongUs, Back]], menu) (0,0)
+draw (Temas Back Theme1, _, menu, _, _, _, _, bg, _) = 
+    return $ Pictures $ backgroundsN (GameNormal, bg) : opcoes (NTheme, menu) : drawMenu ([[Nada, Nada, Nada, Select],[BlockDude, DragonBall, AmongUs, Back]], menu) (0,0)
 
+draw (Temas BlockDude Theme2, _, menu, _, _, _, _, bg, _) = 
+    return $ Pictures $ backgroundsDB (GameNormal, bg) : opcoes (NTheme, menu) : drawMenu ([[Select, Nada, Nada, Nada],[BlockDude, DragonBall, AmongUs, Back]], menu) (0,0)
+draw (Temas DragonBall Theme2, _, menu, _, _, _, _, bg, _) = 
+    return $ Pictures $ backgroundsDB (GameNormal, bg) : opcoes (DBTheme, menu) : drawMenu ([[Nada, Select, Nada, Nada],[BlockDude, DragonBall, AmongUs, Back]], menu) (0,0)
+draw (Temas AmongUs Theme2, _, menu, _, _, _, _, bg, _) = 
+    return $ Pictures $ backgroundsDB (GameNormal, bg) : opcoes (ATheme, menu) : drawMenu ([[Nada, Nada, Select, Nada],[BlockDude, DragonBall, AmongUs, Back]], menu) (0,0)
+draw (Temas Back Theme2, _, menu, _, _, _, _, bg, _) = 
+    return $ Pictures $ backgroundsDB (GameNormal, bg) : opcoes (DBTheme, menu) : drawMenu ([[Nada, Nada, Nada, Select],[BlockDude, DragonBall, AmongUs, Back]], menu) (0,0)
 
+draw (Temas BlockDude Theme3, _, menu, _, _, _, _, bg, _) = 
+    return $ Pictures $ backgroundsA (GameNormal, bg) : opcoes (NTheme, menu) : drawMenu ([[Select, Nada, Nada, Nada],[BlockDude, DragonBall, AmongUs, Back]], menu) (0,0)
+draw (Temas DragonBall Theme3, _, menu, _, _, _, _, bg, _) = 
+    return $ Pictures $ backgroundsA (GameNormal, bg) : opcoes (DBTheme, menu) : drawMenu ([[Nada, Select, Nada, Nada],[BlockDude, DragonBall, AmongUs, Back]], menu) (0,0)
+draw (Temas AmongUs Theme3, _, menu, _, _, _, _, bg, _) = 
+    return $ Pictures $ backgroundsA (GameNormal, bg) : opcoes (ATheme, menu) : drawMenu ([[Nada, Nada, Select, Nada],[BlockDude, DragonBall, AmongUs, Back]], menu) (0,0)
+draw (Temas Back Theme3, _, menu, _, _, _, _, bg, _) = 
+    return $ Pictures $ backgroundsA (GameNormal, bg) : opcoes (ATheme, menu) : drawMenu ([[Nada, Nada, Nada, Select],[BlockDude, DragonBall, AmongUs, Back]], menu) (0,0)
 
 ------------------------------
 --- Desenhar Parte do Menu ---
@@ -401,33 +565,79 @@ opcoes (DragonBall, menu) = menu !! 6
 opcoes (AmongUs, menu) = menu !! 7
 opcoes (Back, menu) = menu !! 8
 opcoes (Theme, menu) = menu !! 9
+opcoes (NTheme, menu) = menu !! 10
+opcoes (DBTheme, menu) = menu !! 11
+opcoes (ATheme, menu) = menu !! 12
+
+
 
 
 ------------------------------
 --- Desenhar Parte do Mapa ---
 ------------------------------
 
-drawMapa :: (Mapa, [Picture]) -> (Int,Int) -> Float -> [Picture]
-drawMapa ([], _) _ _ = []
-drawMapa ((h:t), jogo) (x,y) b = (Translate (-600) (fromIntegral (y*(-48))) (Pictures (drawMapa2 (h, jogo) x b))) : (drawMapa (t, jogo) (x,y+1) b)
+drawMapaN :: (Mapa, [Picture]) -> (Int,Int) -> Float -> [Picture]
+drawMapaN ([], _) _ _ = []
+drawMapaN ((h:t), jogo) (x,y) b = (Translate (-600) (fromIntegral (y*(-48))) (Pictures (drawMapa2N (h, jogo) x b))) : (drawMapaN (t, jogo) (x,y+1) b)
 
-drawMapa2 :: ([Peca],[Picture]) -> Int -> Float -> [Picture]
-drawMapa2 ([], _) _ _ = []
-drawMapa2 ((h:t), jogo) x b = (Translate (fromIntegral (x*48)) 308 (pecas (h, jogo) b)) : (drawMapa2 (t, jogo) (x+1) b)
+drawMapa2N :: ([Peca],[Picture]) -> Int -> Float -> [Picture]
+drawMapa2N ([], _) _ _ = []
+drawMapa2N ((h:t), jogo) x b = (Translate (fromIntegral (x*48)) 308 (pecasN (h, jogo) b)) : (drawMapa2N (t, jogo) (x+1) b)
 
-drawPlayer :: ([Peca], (Int,Int), [Picture]) -> Float -> [Picture]
-drawPlayer ([],(_,_), _) _ = []
-drawPlayer ((h:t),(x,y), jogo) b = (Translate (fromIntegral ((x*(48))-600)) (fromIntegral (y*(-48))+308) (pecas (h, jogo) b)) : (drawPlayer (t,(x,y+1), jogo) b)
+drawPlayerN :: ([Peca], (Int,Int), [Picture]) -> Float -> [Picture]
+drawPlayerN ([],(_,_), _) _ = []
+drawPlayerN ((h:t),(x,y), jogo) b = (Translate (fromIntegral ((x*(48))-600)) (fromIntegral (y*(-48))+308) (pecasN (h, jogo) b)) : (drawPlayerN (t,(x,y+1), jogo) b)
 
-pecas :: (Peca, [Picture]) -> Float -> Picture
-pecas (Porta, jogo) b
+drawMapaDB :: (Mapa, [Picture]) -> (Int,Int) -> Float -> [Picture]
+drawMapaDB ([], _) _ _ = []
+drawMapaDB ((h:t), jogo) (x,y) b = (Translate (-600) (fromIntegral (y*(-48))) (Pictures (drawMapa2DB (h, jogo) x b))) : (drawMapaDB (t, jogo) (x,y+1) b)
+
+drawMapa2DB :: ([Peca],[Picture]) -> Int -> Float -> [Picture]
+drawMapa2DB ([], _) _ _ = []
+drawMapa2DB ((h:t), jogo) x b = (Translate (fromIntegral (x*48)) 308 (pecasDB (h, jogo) b)) : (drawMapa2DB (t, jogo) (x+1) b)
+
+drawPlayerDB :: ([Peca], (Int,Int), [Picture]) -> Float -> [Picture]
+drawPlayerDB ([],(_,_), _) _ = []
+drawPlayerDB ((h:t),(x,y), jogo) b = (Translate (fromIntegral ((x*(48))-600)) (fromIntegral (y*(-48))+308) (pecasDB (h, jogo) b)) : (drawPlayerDB (t,(x,y+1), jogo) b)
+
+drawMapaA :: (Mapa, [Picture]) -> (Int,Int) -> Float -> [Picture]
+drawMapaA ([], _) _ _ = []
+drawMapaA ((h:t), jogo) (x,y) b = (Translate (-600) (fromIntegral (y*(-48))) (Pictures (drawMapa2A (h, jogo) x b))) : (drawMapaA (t, jogo) (x,y+1) b)
+
+drawMapa2A :: ([Peca],[Picture]) -> Int -> Float -> [Picture]
+drawMapa2A ([], _) _ _ = []
+drawMapa2A ((h:t), jogo) x b = (Translate (fromIntegral (x*48)) 308 (pecasA (h, jogo) b)) : (drawMapa2A (t, jogo) (x+1) b)
+
+drawPlayerA :: ([Peca], (Int,Int), [Picture]) -> Float -> [Picture]
+drawPlayerA ([],(_,_), _) _ = []
+drawPlayerA ((h:t),(x,y), jogo) b = (Translate (fromIntegral ((x*(48))-600)) (fromIntegral (y*(-48))+308) (pecasA (h, jogo) b)) : (drawPlayerA (t,(x,y+1), jogo) b)
+
+pecasN :: (Peca, [Picture]) -> Float -> Picture
+pecasN (Porta, jogo) b
     | mod (round (b*50)) 200 < 100 = jogo !! 0
     | otherwise = jogo !! 1
-pecas (PersonagemD, jogo) _ = jogo !! 2
-pecas (PersonagemE, jogo) _ = jogo !! 3
-pecas (Bloco, jogo) _ = jogo !! 4
-pecas (Caixa, jogo) _ = jogo !! 5
-pecas (Vazio, jogo) _ = Blank
+pecasN (PersonagemD, jogo) _ = jogo !! 2
+pecasN (PersonagemE, jogo) _ = jogo !! 3
+pecasN (Bloco, jogo) _ = jogo !! 4
+pecasN (Caixa, jogo) _ = jogo !! 5
+pecasN (Vazio, jogo) _ = Blank
+
+pecasA :: (Peca, [Picture]) -> Float -> Picture
+pecasA (Porta, jogo) _ = jogo !! 6
+pecasA (PersonagemD, jogo) _ = jogo !! 7
+pecasA (PersonagemE, jogo) _ = jogo !! 8
+pecasA (Bloco, jogo) _ = jogo !! 9
+pecasA (Caixa, jogo) _ = jogo !! 10
+pecasA (Vazio, jogo) _ = Blank
+
+
+pecasDB :: (Peca, [Picture]) -> Float -> Picture
+pecasDB (Porta, jogo) _ = jogo !! 11
+pecasDB (PersonagemD, jogo) _ = jogo !! 12
+pecasDB (PersonagemE, jogo) _ = jogo !! 13
+pecasDB (Bloco, jogo) _ = jogo !! 14
+pecasDB (Caixa, jogo) _ = jogo !! 15
+pecasDB (Vazio, jogo) _ = Blank
 
 -----------------------
 --- Desenhar Niveis ---
@@ -504,16 +714,20 @@ victory (Level, vitoria) = vitoria !! 5
 
 --- Função para backgrounds ---
 
-backgrounds :: (Tipos, [Picture]) -> Picture
-backgrounds (OpcoesDB, x) = x !! 0
-backgrounds (NiveisDB, x) = x !! 1
-backgrounds (NiveisNormal, x) = x !! 2
-backgrounds (OpcoesNormal, x) = x !! 3
-backgrounds (GameNormal, x) = x !! 4
-backgrounds (GameAmong, x) = x !! 5
-backgrounds (NiveisAmong, x) = x !! 6
-backgrounds (OpcoesAmong, x) = x !! 7
+backgroundsDB :: (Tipos, [Picture]) -> Picture
+backgroundsDB (NiveisNormal, x) = x !! 1
+backgroundsDB (OpcoesNormal, x) = x !! 0
+backgroundsDB (GameNormal, x) = x !! 4
 
+backgroundsN :: (Tipos,[Picture]) -> Picture
+backgroundsN (NiveisNormal, x) = x !! 2
+backgroundsN (OpcoesNormal, x) = x !! 3
+backgroundsN (GameNormal, x) = x !! 4
+
+backgroundsA :: (Tipos,[Picture]) -> Picture
+backgroundsA (GameNormal, x) = x !! 5
+backgroundsA (NiveisNormal, x) = x !! 6
+backgroundsA (OpcoesNormal, x) = x !! 7
 
 
 
@@ -540,246 +754,246 @@ reageEvento :: Event -> EstadoGloss -> IO EstadoGloss
 
 --- Menu ---
 
-reageEvento (EventKey (SpecialKey KeyDown) Down _ _) (Controlador Jogar, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
-    return (Controlador Niveis, pos, menu, jogo, niveis, instrucoes, vitoria, bg,b)
-reageEvento (EventKey (SpecialKey KeyUp) Down _ _) (Controlador Jogar, pos, menu, jogo, niveis, instrucoes, vitoria, bg,b) =
-    return (Controlador Sair, pos, menu, jogo, niveis, instrucoes, vitoria, bg,b)
-reageEvento (EventKey (SpecialKey KeyEnter) Down _ _) (Controlador Jogar, pos, menu, jogo, niveis, instrucoes, vitoria, bg,b) = 
-    return (ModoJogo jogo1 jogo1 Jogo1, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) 
+reageEvento (EventKey (SpecialKey KeyDown) Down _ _) (Controlador Jogar g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
+    return (Controlador Niveis g, pos, menu, jogo, niveis, instrucoes, vitoria, bg,b)
+reageEvento (EventKey (SpecialKey KeyUp) Down _ _) (Controlador Jogar g, pos, menu, jogo, niveis, instrucoes, vitoria, bg,b) =
+    return (Controlador Sair g, pos, menu, jogo, niveis, instrucoes, vitoria, bg,b)
+reageEvento (EventKey (SpecialKey KeyEnter) Down _ _) (Controlador Jogar g, pos, menu, jogo, niveis, instrucoes, vitoria, bg,b) = 
+    return (ModoJogo jogo1 jogo1 Jogo1 g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) 
 
-reageEvento (EventKey (SpecialKey KeyDown) Down _ _) (Controlador Niveis, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
-    return (Controlador Instrucoes, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
-reageEvento (EventKey (SpecialKey KeyUp) Down _ _) (Controlador Niveis, pos, menu, jogo, niveis, instrucoes, vitoria, bg,b) =
-    return (Controlador Jogar, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
-reageEvento (EventKey (SpecialKey KeyEnter) Down _ _) (Controlador Niveis, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
-    return (Selecionador Nivel1, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
+reageEvento (EventKey (SpecialKey KeyDown) Down _ _) (Controlador Niveis g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
+    return (Controlador Instrucoes g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
+reageEvento (EventKey (SpecialKey KeyUp) Down _ _) (Controlador Niveis g, pos, menu, jogo, niveis, instrucoes, vitoria, bg,b) =
+    return (Controlador Jogar g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
+reageEvento (EventKey (SpecialKey KeyEnter) Down _ _) (Controlador Niveis g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
+    return (Selecionador Nivel1 g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
 
-reageEvento (EventKey (SpecialKey KeyDown) Down _ _) (Controlador Instrucoes, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
-    return (Controlador Tema, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
-reageEvento (EventKey (SpecialKey KeyUp) Down _ _) (Controlador Instrucoes, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
-    return (Controlador Niveis, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
-reageEvento (EventKey (SpecialKey KeyEnter) Down _ _) (Controlador Instrucoes, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
-    return (Pergaminho, pos, menu, jogo, niveis, instrucoes, vitoria, bg,b)
+reageEvento (EventKey (SpecialKey KeyDown) Down _ _) (Controlador Instrucoes g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
+    return (Controlador Tema g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
+reageEvento (EventKey (SpecialKey KeyUp) Down _ _) (Controlador Instrucoes g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
+    return (Controlador Niveis g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
+reageEvento (EventKey (SpecialKey KeyEnter) Down _ _) (Controlador Instrucoes g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
+    return (Pergaminho g, pos, menu, jogo, niveis, instrucoes, vitoria, bg,b)
 
-reageEvento (EventKey (SpecialKey KeyDown) Down _ _) (Controlador Tema, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
-    return (Controlador Sair, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
-reageEvento (EventKey (SpecialKey KeyUp) Down _ _) (Controlador Tema, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
-    return (Controlador Instrucoes, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
-reageEvento (EventKey (SpecialKey KeyEnter) Down _ _) (Controlador Tema, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
-    return (Temas BlockDude  , pos, menu, jogo, niveis, instrucoes, vitoria, bg,b)
+reageEvento (EventKey (SpecialKey KeyDown) Down _ _) (Controlador Tema g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
+    return (Controlador Sair g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
+reageEvento (EventKey (SpecialKey KeyUp) Down _ _) (Controlador Tema g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
+    return (Controlador Instrucoes g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
+reageEvento (EventKey (SpecialKey KeyEnter) Down _ _) (Controlador Tema g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
+    return (Temas BlockDude  g , pos, menu, jogo, niveis, instrucoes, vitoria, bg,b)
 
-reageEvento (EventKey (SpecialKey KeyDown) Down _ _) (Controlador Sair, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
-    return (Controlador Jogar, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
-reageEvento (EventKey (SpecialKey KeyUp) Down _ _) (Controlador Sair, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
-    return (Controlador Tema, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
-reageEvento (EventKey (SpecialKey KeyEnter) Down _ _) (Controlador Sair, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
+reageEvento (EventKey (SpecialKey KeyDown) Down _ _) (Controlador Sair g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
+    return (Controlador Jogar g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
+reageEvento (EventKey (SpecialKey KeyUp) Down _ _) (Controlador Sair g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
+    return (Controlador Tema g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
+reageEvento (EventKey (SpecialKey KeyEnter) Down _ _) (Controlador Sair g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
     exitSuccess 
 
 --- Menu dos Niveis ---
 
-reageEvento (EventKey (SpecialKey KeyDown) Down _ _) (Selecionador Nivel1, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
-    return (Selecionador Nivel2, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
-reageEvento (EventKey (SpecialKey KeyRight) Down _ _) (Selecionador Nivel1, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
-    return (Selecionador Nivel6, pos, menu, jogo, niveis, instrucoes, vitoria, bg,b)
-reageEvento (EventKey (SpecialKey KeyEnter) Down _ _) (Selecionador Nivel1, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
-    return (ModoJogo jogo1 jogo1 Jogo1, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
-reageEvento (EventKey (SpecialKey KeyUp) Down _ _) (Selecionador Nivel2, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
-    return (Selecionador Nivel1, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
-reageEvento (EventKey (SpecialKey KeyDown) Down _ _) (Selecionador Nivel2, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
-    return (Selecionador Nivel3, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
-reageEvento (EventKey (SpecialKey KeyRight) Down _ _) (Selecionador Nivel2, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
-    return (Selecionador Nivel7, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
-reageEvento (EventKey (SpecialKey KeyEnter) Down _ _) (Selecionador Nivel2, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
-    return (ModoJogo jogo2 jogo2 Jogo2, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
-reageEvento (EventKey (SpecialKey KeyDown) Down _ _) (Selecionador Nivel3, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
-    return (Selecionador Nivel4, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
-reageEvento (EventKey (SpecialKey KeyUp) Down _ _) (Selecionador Nivel3, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
-    return (Selecionador Nivel2, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
-reageEvento (EventKey (SpecialKey KeyRight) Down _ _) (Selecionador Nivel3, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
-    return (Selecionador Nivel8, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
-reageEvento (EventKey (SpecialKey KeyEnter) Down _ _) (Selecionador Nivel3, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
-    return (ModoJogo jogo3 jogo3 Jogo3, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
-reageEvento (EventKey (SpecialKey KeyDown) Down _ _) (Selecionador Nivel4, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
-    return (Selecionador Nivel5, pos, menu, jogo, niveis, instrucoes, vitoria, bg,b)
-reageEvento (EventKey (SpecialKey KeyUp) Down _ _) (Selecionador Nivel4, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
-    return (Selecionador Nivel3, pos, menu, jogo, niveis, instrucoes, vitoria, bg,b)
-reageEvento (EventKey (SpecialKey KeyRight) Down _ _) (Selecionador Nivel4, pos, menu, jogo, niveis, instrucoes, vitoria, bg,b) =
-    return (Selecionador Nivel9, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
-reageEvento (EventKey (SpecialKey KeyEnter) Down _ _) (Selecionador Nivel4, pos, menu, jogo, niveis, instrucoes, vitoria,bg,b) =
-    return (ModoJogo jogo4 jogo4 Jogo4, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
-reageEvento (EventKey (SpecialKey KeyUp) Down _ _) (Selecionador Nivel5, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
-    return (Selecionador Nivel4, pos, menu, jogo, niveis, instrucoes, vitoria, bg,b)
-reageEvento (EventKey (SpecialKey KeyRight) Down _ _) (Selecionador Nivel5, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
-    return (Selecionador Nivel10, pos, menu, jogo, niveis, instrucoes, vitoria, bg,b)
-reageEvento (EventKey (SpecialKey KeyEnter) Down _ _) (Selecionador Nivel5, pos, menu, jogo, niveis, instrucoes, vitoria, bg,b) =
-    return (ModoJogo jogo5 jogo5 Jogo5, pos, menu, jogo, niveis, instrucoes, vitoria, bg,b)  
-reageEvento (EventKey (SpecialKey KeyDown) Down _ _) (Selecionador Nivel6, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
-    return (Selecionador Nivel7, pos, menu, jogo, niveis, instrucoes, vitoria, bg,b)
-reageEvento (EventKey (SpecialKey KeyLeft) Down _ _) (Selecionador Nivel6, pos, menu, jogo, niveis, instrucoes, vitoria, bg,b) =
-    return (Selecionador Nivel1, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
-reageEvento (EventKey (SpecialKey KeyRight) Down _ _) (Selecionador Nivel6, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
-    return (Selecionador Voltar, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
-reageEvento (EventKey (SpecialKey KeyEnter) Down _ _) (Selecionador Nivel6, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
-    return (ModoJogo jogo6 jogo6 Jogo6, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
-reageEvento (EventKey (SpecialKey KeyDown) Down _ _) (Selecionador Nivel7, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
-    return (Selecionador Nivel8, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
-reageEvento (EventKey (SpecialKey KeyUp) Down _ _) (Selecionador Nivel7, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
-    return (Selecionador Nivel6, pos, menu, jogo, niveis, instrucoes, vitoria, bg,b)
-reageEvento (EventKey (SpecialKey KeyLeft) Down _ _) (Selecionador Nivel7, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
-    return (Selecionador Nivel2, pos, menu, jogo, niveis, instrucoes, vitoria, bg,b)
-reageEvento (EventKey (SpecialKey KeyRight) Down _ _) (Selecionador Nivel7, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
-    return (Selecionador Voltar, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
-reageEvento (EventKey (SpecialKey KeyEnter) Down _ _) (Selecionador Nivel7, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
-    return (ModoJogo jogo7 jogo7 Jogo7, pos, menu, jogo, niveis, instrucoes, vitoria, bg,b)
-reageEvento (EventKey (SpecialKey KeyDown) Down _ _) (Selecionador Nivel8, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
-    return (Selecionador Nivel9, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
-reageEvento (EventKey (SpecialKey KeyUp) Down _ _) (Selecionador Nivel8, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
-    return (Selecionador Nivel7, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
-reageEvento (EventKey (SpecialKey KeyRight) Down _ _) (Selecionador Nivel8, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
-    return (Selecionador Voltar, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
-reageEvento (EventKey (SpecialKey KeyLeft) Down _ _) (Selecionador Nivel8, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
-    return (Selecionador Nivel3, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
-reageEvento (EventKey (SpecialKey KeyEnter) Down _ _) (Selecionador Nivel8, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
-    return (ModoJogo jogo8 jogo8 Jogo8, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
-reageEvento (EventKey (SpecialKey KeyDown) Down _ _) (Selecionador Nivel9, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
-    return (Selecionador Nivel10, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
-reageEvento (EventKey (SpecialKey KeyUp) Down _ _) (Selecionador Nivel9, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
-    return (Selecionador Nivel8, pos, menu, jogo, niveis, instrucoes, vitoria, bg,b)
-reageEvento (EventKey (SpecialKey KeyLeft) Down _ _) (Selecionador Nivel9, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
-    return (Selecionador Nivel4, pos, menu, jogo, niveis, instrucoes, vitoria, bg,b)
-reageEvento (EventKey (SpecialKey KeyRight) Down _ _) (Selecionador Nivel9, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
-    return (Selecionador Voltar, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
-reageEvento (EventKey (SpecialKey KeyEnter) Down _ _) (Selecionador Nivel9, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
-    return (ModoJogo jogo9 jogo9 Jogo9, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
-reageEvento (EventKey (SpecialKey KeyUp) Down _ _) (Selecionador Nivel10, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
-    return (Selecionador Nivel9, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
-reageEvento (EventKey (SpecialKey KeyLeft) Down _ _) (Selecionador Nivel10, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
-    return (Selecionador Nivel5, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
-reageEvento (EventKey (SpecialKey KeyRight) Down _ _) (Selecionador Nivel10, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
-    return (Selecionador Voltar, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
-reageEvento (EventKey (SpecialKey KeyEnter) Down _ _) (Selecionador Nivel10, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
-    return (ModoJogo jogo10 jogo10 Jogo10, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
-reageEvento (EventKey (SpecialKey KeyLeft) Down _ _) (Selecionador Voltar, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
-    return (Selecionador Nivel8, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
-reageEvento (EventKey (SpecialKey KeyEnter) Down _ _) (Selecionador Voltar, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
-    return (Controlador Niveis, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
+reageEvento (EventKey (SpecialKey KeyDown) Down _ _) (Selecionador Nivel1 g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
+    return (Selecionador Nivel2 g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
+reageEvento (EventKey (SpecialKey KeyRight) Down _ _) (Selecionador Nivel1 g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
+    return (Selecionador Nivel6 g, pos, menu, jogo, niveis, instrucoes, vitoria, bg,b)
+reageEvento (EventKey (SpecialKey KeyEnter) Down _ _) (Selecionador Nivel1 g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
+    return (ModoJogo jogo1 jogo1 Jogo1 g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
+reageEvento (EventKey (SpecialKey KeyUp) Down _ _) (Selecionador Nivel2 g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
+    return (Selecionador Nivel1 g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
+reageEvento (EventKey (SpecialKey KeyDown) Down _ _) (Selecionador Nivel2 g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
+    return (Selecionador Nivel3 g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
+reageEvento (EventKey (SpecialKey KeyRight) Down _ _) (Selecionador Nivel2 g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
+    return (Selecionador Nivel7 g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
+reageEvento (EventKey (SpecialKey KeyEnter) Down _ _) (Selecionador Nivel2 g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
+    return (ModoJogo jogo2 jogo2 Jogo2 g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
+reageEvento (EventKey (SpecialKey KeyDown) Down _ _) (Selecionador Nivel3 g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
+    return (Selecionador Nivel4 g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
+reageEvento (EventKey (SpecialKey KeyUp) Down _ _) (Selecionador Nivel3 g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
+    return (Selecionador Nivel2 g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
+reageEvento (EventKey (SpecialKey KeyRight) Down _ _) (Selecionador Nivel3 g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
+    return (Selecionador Nivel8 g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
+reageEvento (EventKey (SpecialKey KeyEnter) Down _ _) (Selecionador Nivel3 g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
+    return (ModoJogo jogo3 jogo3 Jogo3 g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
+reageEvento (EventKey (SpecialKey KeyDown) Down _ _) (Selecionador Nivel4 g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
+    return (Selecionador Nivel5 g, pos, menu, jogo, niveis, instrucoes, vitoria, bg,b)
+reageEvento (EventKey (SpecialKey KeyUp) Down _ _) (Selecionador Nivel4 g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
+    return (Selecionador Nivel3 g, pos, menu, jogo, niveis, instrucoes, vitoria, bg,b)
+reageEvento (EventKey (SpecialKey KeyRight) Down _ _) (Selecionador Nivel4 g, pos, menu, jogo, niveis, instrucoes, vitoria, bg,b) =
+    return (Selecionador Nivel9 g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
+reageEvento (EventKey (SpecialKey KeyEnter) Down _ _) (Selecionador Nivel4 g, pos, menu, jogo, niveis, instrucoes, vitoria,bg,b) =
+    return (ModoJogo jogo4 jogo4 Jogo4 g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
+reageEvento (EventKey (SpecialKey KeyUp) Down _ _) (Selecionador Nivel5 g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
+    return (Selecionador Nivel4 g, pos, menu, jogo, niveis, instrucoes, vitoria, bg,b)
+reageEvento (EventKey (SpecialKey KeyRight) Down _ _) (Selecionador Nivel5 g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
+    return (Selecionador Nivel10 g, pos, menu, jogo, niveis, instrucoes, vitoria, bg,b)
+reageEvento (EventKey (SpecialKey KeyEnter) Down _ _) (Selecionador Nivel5 g, pos, menu, jogo, niveis, instrucoes, vitoria, bg,b) =
+    return (ModoJogo jogo5 jogo5 Jogo5 g, pos, menu, jogo, niveis, instrucoes, vitoria, bg,b)  
+reageEvento (EventKey (SpecialKey KeyDown) Down _ _) (Selecionador Nivel6 g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
+    return (Selecionador Nivel7 g, pos, menu, jogo, niveis, instrucoes, vitoria, bg,b)
+reageEvento (EventKey (SpecialKey KeyLeft) Down _ _) (Selecionador Nivel6 g, pos, menu, jogo, niveis, instrucoes, vitoria, bg,b) =
+    return (Selecionador Nivel1 g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
+reageEvento (EventKey (SpecialKey KeyRight) Down _ _) (Selecionador Nivel6 g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
+    return (Selecionador Voltar g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
+reageEvento (EventKey (SpecialKey KeyEnter) Down _ _) (Selecionador Nivel6 g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
+    return (ModoJogo jogo6 jogo6 Jogo6 g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
+reageEvento (EventKey (SpecialKey KeyDown) Down _ _) (Selecionador Nivel7 g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
+    return (Selecionador Nivel8 g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
+reageEvento (EventKey (SpecialKey KeyUp) Down _ _) (Selecionador Nivel7 g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
+    return (Selecionador Nivel6 g, pos, menu, jogo, niveis, instrucoes, vitoria, bg,b)
+reageEvento (EventKey (SpecialKey KeyLeft) Down _ _) (Selecionador Nivel7 g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
+    return (Selecionador Nivel2 g, pos, menu, jogo, niveis, instrucoes, vitoria, bg,b)
+reageEvento (EventKey (SpecialKey KeyRight) Down _ _) (Selecionador Nivel7 g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
+    return (Selecionador Voltar g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
+reageEvento (EventKey (SpecialKey KeyEnter) Down _ _) (Selecionador Nivel7 g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
+    return (ModoJogo jogo7 jogo7 Jogo7 g, pos, menu, jogo, niveis, instrucoes, vitoria, bg,b)
+reageEvento (EventKey (SpecialKey KeyDown) Down _ _) (Selecionador Nivel8 g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
+    return (Selecionador Nivel9 g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
+reageEvento (EventKey (SpecialKey KeyUp) Down _ _) (Selecionador Nivel8 g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
+    return (Selecionador Nivel7 g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
+reageEvento (EventKey (SpecialKey KeyRight) Down _ _) (Selecionador Nivel8 g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
+    return (Selecionador Voltar g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
+reageEvento (EventKey (SpecialKey KeyLeft) Down _ _) (Selecionador Nivel8 g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
+    return (Selecionador Nivel3 g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
+reageEvento (EventKey (SpecialKey KeyEnter) Down _ _) (Selecionador Nivel8 g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
+    return (ModoJogo jogo8 jogo8 Jogo8 g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
+reageEvento (EventKey (SpecialKey KeyDown) Down _ _) (Selecionador Nivel9 g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
+    return (Selecionador Nivel10 g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
+reageEvento (EventKey (SpecialKey KeyUp) Down _ _) (Selecionador Nivel9 g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
+    return (Selecionador Nivel8 g, pos, menu, jogo, niveis, instrucoes, vitoria, bg,b)
+reageEvento (EventKey (SpecialKey KeyLeft) Down _ _) (Selecionador Nivel9 g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
+    return (Selecionador Nivel4 g, pos, menu, jogo, niveis, instrucoes, vitoria, bg,b)
+reageEvento (EventKey (SpecialKey KeyRight) Down _ _) (Selecionador Nivel9 g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
+    return (Selecionador Voltar g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
+reageEvento (EventKey (SpecialKey KeyEnter) Down _ _) (Selecionador Nivel9 g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
+    return (ModoJogo jogo9 jogo9 Jogo9 g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
+reageEvento (EventKey (SpecialKey KeyUp) Down _ _) (Selecionador Nivel10 g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
+    return (Selecionador Nivel9 g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
+reageEvento (EventKey (SpecialKey KeyLeft) Down _ _) (Selecionador Nivel10 g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
+    return (Selecionador Nivel5 g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
+reageEvento (EventKey (SpecialKey KeyRight) Down _ _) (Selecionador Nivel10 g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
+    return (Selecionador Voltar g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
+reageEvento (EventKey (SpecialKey KeyEnter) Down _ _) (Selecionador Nivel10 g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
+    return (ModoJogo jogo10 jogo10 Jogo10 g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
+reageEvento (EventKey (SpecialKey KeyLeft) Down _ _) (Selecionador Voltar g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
+    return (Selecionador Nivel8 g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
+reageEvento (EventKey (SpecialKey KeyEnter) Down _ _) (Selecionador Voltar g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
+    return (Controlador Niveis g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
 
 --- ModoJogo ---
 
-reageEvento (EventKey (SpecialKey KeyLeft) Down _ _) (ModoJogo (Jogo mapa (Jogador (x,y) w bool)) reload lvl, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) 
+reageEvento (EventKey (SpecialKey KeyLeft) Down _ _) (ModoJogo (Jogo mapa (Jogador (x,y) w bool)) reload lvl g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) 
     | moveJogador (Jogo mapa (Jogador (x,y) w bool)) AndarEsquerda == Jogo mapa (Jogador (porta (Jogo mapa (Jogador (x,y) w bool))) w bool) = 
-        return (ImagemVitoria Continuar reload lvl, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
+        return (ImagemVitoria Continuar reload lvl g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
     | otherwise = 
-        return (ModoJogo (moveJogador (Jogo mapa (Jogador (x,y) w bool)) AndarEsquerda) reload lvl,pos, menu, jogo, niveis, instrucoes, vitoria, bg,b)
-reageEvento (EventKey (SpecialKey KeyRight) Down _ _) (ModoJogo (Jogo mapa (Jogador (x,y) w bool)) reload lvl,pos, menu, jogo, niveis, instrucoes, vitoria, bg,b) 
+        return (ModoJogo (moveJogador (Jogo mapa (Jogador (x,y) w bool)) AndarEsquerda) reload lvl g,pos, menu, jogo, niveis, instrucoes, vitoria, bg,b)
+reageEvento (EventKey (SpecialKey KeyRight) Down _ _) (ModoJogo (Jogo mapa (Jogador (x,y) w bool)) reload lvl g,pos, menu, jogo, niveis, instrucoes, vitoria, bg,b) 
     | moveJogador (Jogo mapa (Jogador (x,y) w bool)) AndarDireita == Jogo mapa (Jogador (porta (Jogo mapa (Jogador (x,y) w bool))) w bool) = 
-        return (ImagemVitoria Continuar reload lvl, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
+        return (ImagemVitoria Continuar reload lvl g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
     | otherwise = 
-        return (ModoJogo (moveJogador (Jogo mapa (Jogador (x,y) w bool)) AndarDireita) reload lvl, pos, menu, jogo, niveis, instrucoes, vitoria, bg,b)
-reageEvento (EventKey (SpecialKey KeyUp) Down _ _) (ModoJogo (Jogo mapa (Jogador (x,y) w bool)) reload lvl,pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) 
+        return (ModoJogo (moveJogador (Jogo mapa (Jogador (x,y) w bool)) AndarDireita) reload lvl g, pos, menu, jogo, niveis, instrucoes, vitoria, bg,b)
+reageEvento (EventKey (SpecialKey KeyUp) Down _ _) (ModoJogo (Jogo mapa (Jogador (x,y) w bool)) reload lvl g,pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) 
     | moveJogador (Jogo mapa (Jogador (x,y) w bool)) Trepar == Jogo mapa (Jogador (porta (Jogo mapa (Jogador (x,y) w bool))) w bool) = 
-        return (ImagemVitoria Continuar reload lvl, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
+        return (ImagemVitoria Continuar reload lvl g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
     | otherwise = 
-        return (ModoJogo (moveJogador (Jogo mapa (Jogador (x,y) w bool)) Trepar) reload lvl,pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
-reageEvento (EventKey (SpecialKey KeyDown) Down _ _) (ModoJogo (Jogo mapa (Jogador (x,y) w bool)) reload lvl,pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) 
+        return (ModoJogo (moveJogador (Jogo mapa (Jogador (x,y) w bool)) Trepar) reload lvl g,pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
+reageEvento (EventKey (SpecialKey KeyDown) Down _ _) (ModoJogo (Jogo mapa (Jogador (x,y) w bool)) reload lvl g,pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) 
     | moveJogador (Jogo mapa (Jogador (x,y) w bool)) InterageCaixa == Jogo mapa (Jogador (porta (Jogo mapa (Jogador (x,y) w bool))) w bool) = 
-        return (ImagemVitoria Continuar reload lvl, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
+        return (ImagemVitoria Continuar reload lvl g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
     | otherwise = 
-        return (ModoJogo (moveJogador (Jogo mapa (Jogador (x,y) w bool)) InterageCaixa) reload lvl,pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
-reageEvento (EventKey (Char 'a') Down _ _) (ModoJogo (Jogo mapa (Jogador (x,y) w bool)) reload lvl,pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) 
+        return (ModoJogo (moveJogador (Jogo mapa (Jogador (x,y) w bool)) InterageCaixa) reload lvl g,pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
+reageEvento (EventKey (Char 'a') Down _ _) (ModoJogo (Jogo mapa (Jogador (x,y) w bool)) reload lvl g,pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) 
     | moveJogador (Jogo mapa (Jogador (x,y) w bool)) AndarEsquerda == Jogo mapa (Jogador (porta (Jogo mapa (Jogador (x,y) w bool))) w bool) = 
-        return (ImagemVitoria Continuar reload lvl, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
+        return (ImagemVitoria Continuar reload lvl g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
     | otherwise = 
-        return (ModoJogo (moveJogador (Jogo mapa (Jogador (x,y) w bool)) AndarEsquerda) reload lvl,pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
-reageEvento (EventKey (Char 'd') Down _ _) (ModoJogo (Jogo mapa (Jogador (x,y) w bool)) reload lvl,pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) 
+        return (ModoJogo (moveJogador (Jogo mapa (Jogador (x,y) w bool)) AndarEsquerda) reload lvl g,pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
+reageEvento (EventKey (Char 'd') Down _ _) (ModoJogo (Jogo mapa (Jogador (x,y) w bool)) reload lvl g,pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) 
     | moveJogador (Jogo mapa (Jogador (x,y) w bool)) AndarDireita == Jogo mapa (Jogador (porta (Jogo mapa (Jogador (x,y) w bool))) w bool) = 
-        return (ImagemVitoria Continuar reload lvl, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
+        return (ImagemVitoria Continuar reload lvl g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
     | otherwise = 
-        return (ModoJogo (moveJogador (Jogo mapa (Jogador (x,y) w bool)) AndarDireita) reload lvl,pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
-reageEvento (EventKey (Char 'w') Down _ _) (ModoJogo (Jogo mapa (Jogador (x,y) w bool)) reload lvl,pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) 
+        return (ModoJogo (moveJogador (Jogo mapa (Jogador (x,y) w bool)) AndarDireita) reload lvl g,pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
+reageEvento (EventKey (Char 'w') Down _ _) (ModoJogo (Jogo mapa (Jogador (x,y) w bool)) reload lvl g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) 
     | moveJogador (Jogo mapa (Jogador (x,y) w bool)) Trepar == Jogo mapa (Jogador (porta (Jogo mapa (Jogador (x,y) w bool))) w bool) = 
-        return (ImagemVitoria Continuar reload lvl, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
+        return (ImagemVitoria Continuar reload lvl g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
     | otherwise = 
-        return (ModoJogo (moveJogador (Jogo mapa (Jogador (x,y) w bool)) Trepar) reload lvl, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
-reageEvento (EventKey (Char 's') Down _ _) (ModoJogo (Jogo mapa (Jogador (x,y) w bool)) reload lvl,pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) 
+        return (ModoJogo (moveJogador (Jogo mapa (Jogador (x,y) w bool)) Trepar) reload lvl g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
+reageEvento (EventKey (Char 's') Down _ _) (ModoJogo (Jogo mapa (Jogador (x,y) w bool)) reload lvl g,pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) 
     | moveJogador (Jogo mapa (Jogador (x,y) w bool)) InterageCaixa == Jogo mapa (Jogador (porta (Jogo mapa (Jogador (x,y) w bool))) w bool) = 
-        return (ImagemVitoria Continuar reload lvl, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
+        return (ImagemVitoria Continuar reload lvl g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
     | otherwise = 
-        return (ModoJogo (moveJogador (Jogo mapa (Jogador (x,y) w bool)) InterageCaixa) reload lvl,pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
-reageEvento (EventKey (Char 'r') Down _ _) (ModoJogo game reload lvl, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
-    return (ModoJogo reload reload lvl, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
-reageEvento (EventKey (SpecialKey KeyEsc) Down _ _) (ModoJogo game reload lvl, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
-    return (Controlador Jogar, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
+        return (ModoJogo (moveJogador (Jogo mapa (Jogador (x,y) w bool)) InterageCaixa) reload lvl g,pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
+reageEvento (EventKey (Char 'r') Down _ _) (ModoJogo game reload lvl g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
+    return (ModoJogo reload reload lvl g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
+reageEvento (EventKey (SpecialKey KeyEsc) Down _ _) (ModoJogo game reload lvl g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
+    return (Controlador Jogar g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
 
 --- Instrucoes --- 
 
-reageEvento (EventKey (SpecialKey KeyEnter) Down _ _) (Pergaminho, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
-    return (Controlador Instrucoes, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
+reageEvento (EventKey (SpecialKey KeyEnter) Down _ _) (Pergaminho g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
+    return (Controlador Instrucoes g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
 
 --- Vitoria ---
 
-reageEvento (EventKey (SpecialKey KeyDown) Down _ _) (ImagemVitoria Continuar game lvl, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
-    return (ImagemVitoria Niveis game lvl, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
-reageEvento (EventKey (SpecialKey KeyDown) Down _ _) (ImagemVitoria Niveis game lvl, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
-    return (ImagemVitoria Sair game lvl, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
-reageEvento (EventKey (SpecialKey KeyUp) Down _ _) (ImagemVitoria Niveis game lvl, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
-    return (ImagemVitoria Continuar game lvl, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
-reageEvento (EventKey (SpecialKey KeyEnter) Down _ _) (ImagemVitoria Niveis game lvl, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
-    return (Selecionador Nivel1, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) 
-reageEvento (EventKey (SpecialKey KeyEnter) Down _ _) (ImagemVitoria Sair game lvl, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
-    return (Controlador Niveis, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
-reageEvento (EventKey (SpecialKey KeyUp) Down _ _) (ImagemVitoria Sair game lvl, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
-    return (ImagemVitoria Niveis game lvl, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
+reageEvento (EventKey (SpecialKey KeyDown) Down _ _) (ImagemVitoria Continuar game lvl g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
+    return (ImagemVitoria Niveis game lvl g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
+reageEvento (EventKey (SpecialKey KeyDown) Down _ _) (ImagemVitoria Niveis game lvl g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
+    return (ImagemVitoria Sair game lvl g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
+reageEvento (EventKey (SpecialKey KeyUp) Down _ _) (ImagemVitoria Niveis game lvl g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
+    return (ImagemVitoria Continuar game lvl g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
+reageEvento (EventKey (SpecialKey KeyEnter) Down _ _) (ImagemVitoria Niveis game lvl g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
+    return (Selecionador Nivel1 g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) 
+reageEvento (EventKey (SpecialKey KeyEnter) Down _ _) (ImagemVitoria Sair game lvl g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
+    return (Controlador Niveis g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
+reageEvento (EventKey (SpecialKey KeyUp) Down _ _) (ImagemVitoria Sair game lvl g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
+    return (ImagemVitoria Niveis game lvl g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
 
-reageEvento (EventKey (SpecialKey KeyEnter) Down _ _) (ImagemVitoria Continuar jogo1 Jogo1, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
-    return (ModoJogo jogo2 jogo2 Jogo2, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
-reageEvento (EventKey (SpecialKey KeyEnter) Down _ _) (ImagemVitoria Continuar jogo2 Jogo2, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
-    return (ModoJogo jogo3 jogo3 Jogo3, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
-reageEvento (EventKey (SpecialKey KeyEnter) Down _ _) (ImagemVitoria Continuar jogo3 Jogo3, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
-    return (ModoJogo jogo4 jogo4 Jogo4, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
-reageEvento (EventKey (SpecialKey KeyEnter) Down _ _) (ImagemVitoria Continuar jogo4 Jogo4, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
-    return (ModoJogo jogo5 jogo5 Jogo5, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
-reageEvento (EventKey (SpecialKey KeyEnter) Down _ _) (ImagemVitoria Continuar jogo5 Jogo5, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
-    return (ModoJogo jogo6 jogo6 Jogo6, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
-reageEvento (EventKey (SpecialKey KeyEnter) Down _ _) (ImagemVitoria Continuar jogo6 Jogo6, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
-    return (ModoJogo jogo7 jogo7 Jogo7, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
-reageEvento (EventKey (SpecialKey KeyEnter) Down _ _) (ImagemVitoria Continuar jogo7 Jogo7, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
-    return (ModoJogo jogo8 jogo8 Jogo8, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
-reageEvento (EventKey (SpecialKey KeyEnter) Down _ _) (ImagemVitoria Continuar jogo8 Jogo8, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
-    return (ModoJogo jogo9 jogo9 Jogo9, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
-reageEvento (EventKey (SpecialKey KeyEnter) Down _ _) (ImagemVitoria Continuar jogo9 Jogo9, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
-    return (ModoJogo jogo10 jogo10 Jogo10, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
-reageEvento (EventKey (SpecialKey KeyEnter) Down _ _) (ImagemVitoria Continuar jogo10 Jogo10, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
-    return (Selecionador Voltar, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
+reageEvento (EventKey (SpecialKey KeyEnter) Down _ _) (ImagemVitoria Continuar jogo1 Jogo1 g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
+    return (ModoJogo jogo2 jogo2 Jogo2 g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
+reageEvento (EventKey (SpecialKey KeyEnter) Down _ _) (ImagemVitoria Continuar jogo2 Jogo2 g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
+    return (ModoJogo jogo3 jogo3 Jogo3 g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
+reageEvento (EventKey (SpecialKey KeyEnter) Down _ _) (ImagemVitoria Continuar jogo3 Jogo3 g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
+    return (ModoJogo jogo4 jogo4 Jogo4 g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
+reageEvento (EventKey (SpecialKey KeyEnter) Down _ _) (ImagemVitoria Continuar jogo4 Jogo4 g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
+    return (ModoJogo jogo5 jogo5 Jogo5 g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
+reageEvento (EventKey (SpecialKey KeyEnter) Down _ _) (ImagemVitoria Continuar jogo5 Jogo5 g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
+    return (ModoJogo jogo6 jogo6 Jogo6 g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
+reageEvento (EventKey (SpecialKey KeyEnter) Down _ _) (ImagemVitoria Continuar jogo6 Jogo6 g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
+    return (ModoJogo jogo7 jogo7 Jogo7 g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
+reageEvento (EventKey (SpecialKey KeyEnter) Down _ _) (ImagemVitoria Continuar jogo7 Jogo7 g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
+    return (ModoJogo jogo8 jogo8 Jogo8 g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
+reageEvento (EventKey (SpecialKey KeyEnter) Down _ _) (ImagemVitoria Continuar jogo8 Jogo8 g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
+    return (ModoJogo jogo9 jogo9 Jogo9 g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
+reageEvento (EventKey (SpecialKey KeyEnter) Down _ _) (ImagemVitoria Continuar jogo9 Jogo9 g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
+    return (ModoJogo jogo10 jogo10 Jogo10 g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
+reageEvento (EventKey (SpecialKey KeyEnter) Down _ _) (ImagemVitoria Continuar jogo10 Jogo10 g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
+    return (Selecionador Voltar g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b)
 
 --- Menu dos Temas ---
-reageEvento (EventKey (SpecialKey KeyUp) Down _ _) (Temas BlockDude, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
-    return (Temas Back, pos, menu, jogo, niveis, instrucoes, vitoria, bg,b)
-reageEvento (EventKey (SpecialKey KeyDown) Down _ _) (Temas BlockDude, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
-    return (Temas DragonBall, pos, menu, jogo, niveis, instrucoes, vitoria, bg,b)
-reageEvento (EventKey (SpecialKey KeyEnter) Down _ _) (Temas BlockDude, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
-    return (Temas BlockDude, pos, menu, jogo, niveis, instrucoes, vitoria, bg,b) ------------------ 
+reageEvento (EventKey (SpecialKey KeyUp) Down _ _) (Temas BlockDude g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
+    return (Temas Back g, pos, menu, jogo, niveis, instrucoes, vitoria, bg,b)
+reageEvento (EventKey (SpecialKey KeyDown) Down _ _) (Temas BlockDude g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
+    return (Temas DragonBall g, pos, menu, jogo, niveis, instrucoes, vitoria, bg,b)
+reageEvento (EventKey (SpecialKey KeyEnter) Down _ _) (Temas BlockDude g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
+    return (Temas BlockDude Theme1, pos, menu, jogo, niveis, instrucoes, vitoria, bg,b) ------------------ 
 
-reageEvento (EventKey (SpecialKey KeyUp) Down _ _) (Temas DragonBall, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
-    return (Temas BlockDude, pos, menu, jogo, niveis, instrucoes, vitoria, bg,b)
-reageEvento (EventKey (SpecialKey KeyDown) Down _ _) (Temas DragonBall, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
-    return (Temas AmongUs, pos, menu, jogo, niveis, instrucoes, vitoria, bg,b)
-reageEvento (EventKey (SpecialKey KeyEnter) Down _ _) (Temas DragonBall, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
-    return (Temas BlockDude, pos, menu, jogo, niveis, instrucoes, vitoria, bg,b) ---------------
+reageEvento (EventKey (SpecialKey KeyUp) Down _ _) (Temas DragonBall g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
+    return (Temas BlockDude g, pos, menu, jogo, niveis, instrucoes, vitoria, bg,b)
+reageEvento (EventKey (SpecialKey KeyDown) Down _ _) (Temas DragonBall g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
+    return (Temas AmongUs g, pos, menu, jogo, niveis, instrucoes, vitoria, bg,b)
+reageEvento (EventKey (SpecialKey KeyEnter) Down _ _) (Temas DragonBall g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
+    return (Temas DragonBall Theme2 , pos, menu, jogo, niveis, instrucoes, vitoria, bg,b) ---------------
 
-reageEvento (EventKey (SpecialKey KeyUp) Down _ _) (Temas AmongUs, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
-    return (Temas DragonBall, pos, menu, jogo, niveis, instrucoes, vitoria, bg,b)
-reageEvento (EventKey (SpecialKey KeyDown) Down _ _) (Temas AmongUs, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
-    return (Temas Back, pos, menu, jogo, niveis, instrucoes, vitoria, bg,b)
-reageEvento (EventKey (SpecialKey KeyEnter) Down _ _) (Temas AmongUs, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
-    return (Temas BlockDude, pos, menu, jogo, niveis, instrucoes, vitoria, bg,b) ------------
+reageEvento (EventKey (SpecialKey KeyUp) Down _ _) (Temas AmongUs g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
+    return (Temas DragonBall g, pos, menu, jogo, niveis, instrucoes, vitoria, bg,b)
+reageEvento (EventKey (SpecialKey KeyDown) Down _ _) (Temas AmongUs g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
+    return (Temas Back g, pos, menu, jogo, niveis, instrucoes, vitoria, bg,b)
+reageEvento (EventKey (SpecialKey KeyEnter) Down _ _) (Temas AmongUs g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
+    return (Temas AmongUs Theme3, pos, menu, jogo, niveis, instrucoes, vitoria, bg,b) ------------
 
-reageEvento (EventKey (SpecialKey KeyUp) Down _ _) (Temas Back, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
-    return (Temas AmongUs, pos, menu, jogo, niveis, instrucoes, vitoria, bg,b)
-reageEvento (EventKey (SpecialKey KeyDown) Down _ _) (Temas Back, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
-    return (Temas BlockDude, pos, menu, jogo, niveis, instrucoes, vitoria, bg,b)
-reageEvento (EventKey (SpecialKey KeyEnter) Down _ _) (Temas Back, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
-    return (Controlador Tema, pos, menu, jogo, niveis, instrucoes, vitoria, bg,b)
+reageEvento (EventKey (SpecialKey KeyUp) Down _ _) (Temas Back g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
+    return (Temas AmongUs g, pos, menu, jogo, niveis, instrucoes, vitoria, bg,b)
+reageEvento (EventKey (SpecialKey KeyDown) Down _ _) (Temas Back g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
+    return (Temas BlockDude g, pos, menu, jogo, niveis, instrucoes, vitoria, bg,b)
+reageEvento (EventKey (SpecialKey KeyEnter) Down _ _) (Temas Back g, pos, menu, jogo, niveis, instrucoes, vitoria,bg, b) =
+    return (Controlador Tema g, pos, menu, jogo, niveis, instrucoes, vitoria, bg,b)
 
 
 reageEvento _ n = return n 
