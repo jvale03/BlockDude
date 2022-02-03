@@ -7,7 +7,26 @@ Módulo para a realização da Tarefa 5 do projeto de LI1 em 2021/22.
 -}
 
 
-module Main where
+module Main (
+      -- * Type
+    EstadoGloss(..),
+      -- * Load de Imagens
+    loadMenus, loadJogar, loadNiveis, loadInstrucoes, loadVitoria, loadBackgrounds,   
+      -- * Janela
+    window,
+      -- * Frame Rate
+    fr,
+      -- * Estado Inicial
+    estadoInicial,  
+      -- * Desenhar Estado
+    draw,
+      -- * Reage Evento
+    reageEvento,
+      -- * Reage Tempo
+    reageTempo,
+      -- * MainFunction
+    main
+      ) where
 
 
 import T0Dados
@@ -31,19 +50,16 @@ Nesta 'type':
  - 'Float' tem como efeito representar o número em que o __tempo__ irá começar a ser contado. 
 -}
 
-{- |
-== Load Imagens 
--}
-{- |
-Dividido em categorias, cada __load__ está atribuido a uma parte do jogo, isto é, um load para
-o __mapa__, __menu__, __backgrounds__, __etc__.
--}
-
 type EstadoGloss = (Menu, (Float,Float), [Picture], [Picture], [Picture], [Picture], [Picture], [Picture],Float)
 
 ---------------
 --- loadBmp ---
 ---------------
+
+{- |
+Dividido em categorias, cada __load__ está atribuido a uma parte do jogo, isto é, um load para
+o __mapa__, __menu__, __backgrounds__, __etc__.
+-}
 
 loadMenus :: IO [Picture]
 loadMenus = do jogar <- loadBMP "Jogar.bmp"
@@ -62,6 +78,11 @@ loadMenus = do jogar <- loadBMP "Jogar.bmp"
                return [(Scale 5 5 jogar),(Scale 5 5 nivel),(Scale 5 5 instrucoes),(Scale 5 5 sair),(Translate (-38) (92) (Scale 3 3 seta)),
                        (Scale 5 5 blockdude),(Scale 5 5 db),(Scale 5 5 among),(Scale 5 5 voltar),(Scale 5 5 temas),
                        (Translate 250 (0) (Scale 0.45 0.45 ntheme)),(Translate 250 (0) (Scale 0.45 0.45 dbtheme)),(Translate 250 (0) (Scale 0.45 0.45 atheme))]
+
+{- |
+Dividido em categorias, cada __load__ está atribuido a uma parte do jogo, isto é, um load para
+o __mapa__, __menu__, __backgrounds__, __etc__.
+-}
 
 loadJogar :: IO [Picture]
 loadJogar = do portaD <- loadBMP "PrincesaRight.bmp"
@@ -85,6 +106,11 @@ loadJogar = do portaD <- loadBMP "PrincesaRight.bmp"
                return [(Scale 0.24 0.24 portaE),(Scale 0.24 0.24 portaD),(Translate 0 (0) (Scale 0.3 0.29 personD)),(Translate 0 (0) (Scale 0.3 0.29 personE)),(Translate (0) (0) (Scale 0.3 0.3 bloco)),(Translate (0) (0) (Scale 0.3 0.3 caixa)),
                        (Translate (30) (-31) (Scale 1.05 1.05 buttom)),(Translate (78) (-76) (Scale 2 2 amongR)),(Translate (64) (-76) (Scale 2 2 amongL)),(Translate (126) (-126) (Scale 3 3 amongBlock)),(Translate (126) (-126) (Scale 3 3 amongBox)),
                        (Translate (0) (0) (Scale 0.11 0.14 shenlong)),(Translate (-1) (1) (Scale 0.19 0.170 gokuR)),(Translate (-1) (1) (Scale 0.19 0.170 gokuL)),(Translate (126) (-126) (Scale 3 3 dbBlock)),(Translate (123) (-123) (Scale 2.9 2.9 dbBox))]
+
+{- |
+Dividido em categorias, cada __load__ está atribuido a uma parte do jogo, isto é, um load para
+o __mapa__, __menu__, __backgrounds__, __etc__.
+-}
 
 loadNiveis :: IO [Picture]
 loadNiveis = do nivel1 <- loadBMP "1.bmp"
@@ -115,6 +141,11 @@ loadNiveis = do nivel1 <- loadBMP "1.bmp"
                         (Translate 390 85 (Scale 0.3 0.3 level4)),(Translate 390 85 (Scale 0.3 0.3 level5)),(Translate 390 85 (Scale 0.3 0.3 level6)),
                         (Translate 390 85 (Scale 0.3 0.3 level7)),(Translate 390 85 (Scale 0.3 0.3 level8)),(Translate 390 85 (Scale 0.3 0.3 level9)),(Translate 390 85 (Scale 0.3 0.3 level10))]
 
+{- |
+Dividido em categorias, cada __load__ está atribuido a uma parte do jogo, isto é, um load para
+o __mapa__, __menu__, __backgrounds__, __etc__.
+-}
+
 loadInstrucoes :: IO [Picture]
 loadInstrucoes = do pergaminho <- loadBMP "Pergaminho.bmp"
                     texto <- loadBMP "InstrucoesTexto.bmp"
@@ -122,6 +153,11 @@ loadInstrucoes = do pergaminho <- loadBMP "Pergaminho.bmp"
                     seta <- loadBMP "Select.bmp"
                     return [(Translate 40 0 (Scale 9.5 9.5 pergaminho)),(Translate (-20) 100 (Scale 0.85 0.85 texto)),(Translate 80 (-100) (Scale 4 4 voltar)),
                             (Translate (-140) 105 (Rotate 90 (Scale 2.5 2.5 seta)))]
+
+{- |
+Dividido em categorias, cada __load__ está atribuido a uma parte do jogo, isto é, um load para
+o __mapa__, __menu__, __backgrounds__, __etc__.
+-}
 
 loadVitoria :: IO [Picture]
 loadVitoria = do baixo <- loadBMP "ConcluidoBaixo.bmp"
@@ -133,9 +169,11 @@ loadVitoria = do baixo <- loadBMP "ConcluidoBaixo.bmp"
                  return [(Translate 70 (180) (Scale 6 6 baixo)),(Translate 70 (180) (Scale 6 6 cima)),(Translate 210 (-150) (Scale 4.5 4.5 sair)),
                          (Translate (98) (-77) (Scale 3 3 seta)),(Translate 125 (-150) (Scale 4.5 4.5 continuar)),(Translate 175 (-150) (Scale 4.5 4.5 niveis))]
 
-{- | 
-== Janela
+{- |
+Dividido em categorias, cada __load__ está atribuido a uma parte do jogo, isto é, um load para
+o __mapa__, __menu__, __backgrounds__, __etc__.
 -}
+
 loadBackgrounds :: IO [Picture]
 loadBackgrounds = do opcoesDB <- loadBMP "OpcoesDB.bmp"
                      niveisDB <- loadBMP "NiveisDB.bmp"
@@ -157,9 +195,6 @@ loadBackgrounds = do opcoesDB <- loadBMP "OpcoesDB.bmp"
 {- |
 Neste caso, atribuimos um 'FullScreen', pois desejamos que o jogo seja aberto em tela cheia, seja qual for o monitor!
 -}
-{- | 
-== FrameRate
--}
 
 window :: Display 
 window = FullScreen
@@ -169,9 +204,6 @@ window = FullScreen
 
 {- | 
 Atribuido para reagir ao __tempo__!
--}
-{- | 
-== Estado Inicial
 -}
 
 fr :: Int
@@ -183,9 +215,6 @@ fr = 200
 
 {- | 
 Representa como o jogo irá ser __apresentado inicialmente__, ou seja, ao ser aberto.
--}
-{- | 
-== Desenha Estado
 -}
 
 estadoInicial :: [Picture] -> [Picture] -> [Picture] -> [Picture] -> [Picture] -> [Picture] -> EstadoGloss
@@ -203,9 +232,6 @@ O mesmo está organizado de acordo com cada "grupo" de 'estados' possíveis, ist
 
 __Todas__ as funções aqui envolvidas estão num __ficheiro__ onde se encontram todas as __Auxiliares__ desta tarefa de modo a tornar o
 código mais fluído e legível. 
--}
-{- | 
-== Reage Evento
 -}
 
 draw :: EstadoGloss -> IO Picture
@@ -749,9 +775,6 @@ reageEvento _ n = return n
 {- |
 Desta forma, todos os 'estados' estão submetidos à __mesma contagem__ de tempo. Isto é,
 quando o 'jogo' é aberto, começa a ser contado o tempo e então, mesmo que o 'estado' mude. 
--}
-{- | 
-== Main
 -}
 
 reageTempo :: Float -> EstadoGloss -> IO EstadoGloss   
