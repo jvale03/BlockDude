@@ -7,7 +7,7 @@ Módulo para a realização da Tarefa 5 do projeto de LI1 em 2021/22.
 -}
 
 
-module T5Grafica where
+module Main where
 
 
 import T0Dados
@@ -84,7 +84,7 @@ loadJogar = do portaD <- loadBMP "PrincesaRight.bmp"
                dbBlock <- loadBMP "DBBlock.bmp"            
                return [(Scale 0.24 0.24 portaE),(Scale 0.24 0.24 portaD),(Translate 0 (0) (Scale 0.3 0.29 personD)),(Translate 0 (0) (Scale 0.3 0.29 personE)),(Translate (0) (0) (Scale 0.3 0.3 bloco)),(Translate (0) (0) (Scale 0.3 0.3 caixa)),
                        (Translate (30) (-31) (Scale 1.05 1.05 buttom)),(Translate (78) (-76) (Scale 2 2 amongR)),(Translate (64) (-76) (Scale 2 2 amongL)),(Translate (126) (-126) (Scale 3 3 amongBlock)),(Translate (126) (-126) (Scale 3 3 amongBox)),
-                       (Translate (0) (0) (Scale 0.11 0.14 shenlong)),(Translate (-3) (1) (Scale 0.19 0.170 gokuR)),(Translate (-3) (1) (Scale 0.19 0.170 gokuL)),(Translate (126) (-126) (Scale 3 3 dbBlock)),(Translate (120) (-120) (Scale 2.9 2.9 dbBox))]
+                       (Translate (0) (0) (Scale 0.11 0.14 shenlong)),(Translate (-1) (1) (Scale 0.19 0.170 gokuR)),(Translate (-1) (1) (Scale 0.19 0.170 gokuL)),(Translate (126) (-126) (Scale 3 3 dbBlock)),(Translate (123) (-123) (Scale 2.9 2.9 dbBox))]
 
 loadNiveis :: IO [Picture]
 loadNiveis = do nivel1 <- loadBMP "1.bmp"
@@ -111,7 +111,7 @@ loadNiveis = do nivel1 <- loadBMP "1.bmp"
                 level10 <- loadBMP "Level10.bmp"
                 return [(Scale 5 5 nivel1),(Scale 5 5 nivel2),(Scale 5 5 nivel3),(Scale 5 5 nivel4),(Scale 5 5 nivel5),(Scale 5 5 nivel6),(Scale 5 5 nivel7),
                         (Scale 5 5 nivel8),(Scale 5 5 nivel9),(Scale 5 5 nivel10),(Translate (0) 0 (Scale 5 5 voltar)),(Translate (-50) 95 (Scale 3 3 seta)),
-                        (Translate 390 85 (Scale 0.3 0.3 level1)),(Translate 390 85 (Scale 0.3 0.3 level2)),(Translate 390 85 (Scale 0.3 0.3 level3)),
+                        (Translate 390 85 (Scale 1 1 level1)),(Translate 390 85 (Scale 0.3 0.3 level2)),(Translate 390 85 (Scale 0.3 0.3 level3)),
                         (Translate 390 85 (Scale 0.3 0.3 level4)),(Translate 390 85 (Scale 0.3 0.3 level5)),(Translate 390 85 (Scale 0.3 0.3 level6)),
                         (Translate 390 85 (Scale 0.3 0.3 level7)),(Translate 390 85 (Scale 0.3 0.3 level8)),(Translate 390 85 (Scale 0.3 0.3 level9)),(Translate 390 85 (Scale 0.3 0.3 level10))]
 
@@ -139,14 +139,15 @@ loadVitoria = do baixo <- loadBMP "ConcluidoBaixo.bmp"
 loadBackgrounds :: IO [Picture]
 loadBackgrounds = do opcoesDB <- loadBMP "OpcoesDB.bmp"
                      niveisDB <- loadBMP "NiveisDB.bmp"
-                     niveisNormal <- loadBMP "NiveisNormal.bmp"
+                     gameDB <- loadBMP "GameDB.bmp"
                      opcoesNormal <- loadBMP "OpcoesNormal.bmp"
+                     niveisNormal <- loadBMP "NiveisNormal.bmp"
                      gameNormal <- loadBMP "GameNormal.bmp"
-                     gameAmong <- loadBMP "GameAmong.bmp"
-                     niveisAmong <- loadBMP "NiveisAmong.bmp"
                      opcoesAmong <- loadBMP "OpcoesAmong.bmp"
-                     return [(Translate 0 (-23) (Scale 4.6 4.2  opcoesDB)),(Translate 0 (-23) (Scale 4.6 4.2  niveisDB)),(Translate 0 (-23) (Scale 4.6 4.2  niveisNormal)),
-                             (Translate 0 (-23) (Scale 4.6 4.2  opcoesNormal)),(Translate 0 (-23) (Scale 4.6 4.2  gameNormal)),
+                     niveisAmong <- loadBMP "NiveisAmong.bmp"
+                     gameAmong <- loadBMP "GameAmong.bmp"
+                     return [(Translate 0 (-23) (Scale 4.6 4.2  opcoesDB)),(Translate 0 (-23) (Scale 4.6 4.2  niveisDB)),(Translate 0 (-23) (Scale 4.6 4.2  gameDB)),
+                             (Translate 0 (-23) (Scale 4.6 4.2  niveisNormal)),(Translate 0 (-23) (Scale 4.6 4.2  opcoesNormal)),(Translate 0 (-23) (Scale 4.6 4.2  gameNormal)),
                              (Translate 0 (-23) (Scale 4.6 4.2  gameAmong)),(Translate 0 (-23) (Scale 4.6 4.2  niveisAmong)),(Translate 0 (-23) (Scale 4.6 4.2  opcoesAmong))]
 
 --------------
@@ -162,7 +163,6 @@ Neste caso, atribuimos um 'FullScreen', pois desejamos que o jogo seja aberto em
 
 window :: Display 
 window = FullScreen
-
 ------------------
 --- Frame Rate ---
 ------------------
@@ -280,34 +280,34 @@ draw (ModoJogo game reload lvl Theme3, (x,y), _, jogo, _, _, _, bg,b) =
 ----------------------- 
 
 draw (Selecionador Nivel1 Theme1, (x,y), _, _, niveis, _, _, bg,_) =
-    return $ Pictures $ levels (Show1 , niveis) : backgroundsN (NiveisGeral, bg) : drawNiveis ([[Select, Nada, Nada, Nada, Nada], [Lvl1, Lvl2, Lvl3, Lvl4, Lvl5],
+    return $ Pictures $ backgroundsN (NiveisGeral, bg) : levels (Show1 , niveis) : drawNiveis ([[Select, Nada, Nada, Nada, Nada], [Lvl1, Lvl2, Lvl3, Lvl4, Lvl5],
                                                                                                 [Nada, Nada, Nada, Nada, Nada], [Lvl6, Lvl7, Lvl8, Lvl9, Lvl10],[Nada,Nada,Nada],[Nada,Nada,Back]], niveis) (0,0) 
 draw (Selecionador Nivel2 Theme1, (x,y), _, _, niveis, _, _, bg,_) =
-    return $ Pictures $ levels (Show2 , niveis) : backgroundsN (NiveisGeral, bg) : drawNiveis ([[Nada, Select, Nada, Nada, Nada], [Lvl1, Lvl2, Lvl3, Lvl4, Lvl5],
+    return $ Pictures $ backgroundsN (NiveisGeral, bg) : levels (Show2 , niveis) : drawNiveis ([[Nada, Select, Nada, Nada, Nada], [Lvl1, Lvl2, Lvl3, Lvl4, Lvl5],
                                                                                                 [Nada, Nada, Nada, Nada, Nada], [Lvl6, Lvl7, Lvl8, Lvl9, Lvl10],[Nada,Nada,Nada],[Nada,Nada,Back]], niveis) (0,0) 
 draw (Selecionador Nivel3 Theme1, (x,y), _, _, niveis, _, _,bg, _) =
-    return $ Pictures $ levels (Show3 , niveis) : backgroundsN (NiveisGeral, bg) : drawNiveis ([[Nada, Nada, Select, Nada, Nada], [Lvl1, Lvl2, Lvl3, Lvl4, Lvl5],
+    return $ Pictures $ backgroundsN (NiveisGeral, bg) : levels (Show3 , niveis) : drawNiveis ([[Nada, Nada, Select, Nada, Nada], [Lvl1, Lvl2, Lvl3, Lvl4, Lvl5],
                                                                                                 [Nada, Nada, Nada, Nada, Nada], [Lvl6, Lvl7, Lvl8, Lvl9, Lvl10],[Nada,Nada,Nada],[Nada,Nada,Back]], niveis) (0,0) 
 draw (Selecionador Nivel4 Theme1, (x,y), _, _, niveis, _, _, bg,_) =
-    return $ Pictures $ levels (Show4 , niveis) : backgroundsN (NiveisGeral, bg) : drawNiveis ([[Nada, Nada, Nada, Select, Nada], [Lvl1, Lvl2, Lvl3, Lvl4, Lvl5],
+    return $ Pictures $ backgroundsN (NiveisGeral, bg) : levels (Show4 , niveis) : drawNiveis ([[Nada, Nada, Nada, Select, Nada], [Lvl1, Lvl2, Lvl3, Lvl4, Lvl5],
                                                                                                 [Nada, Nada, Nada, Nada, Nada], [Lvl6, Lvl7, Lvl8, Lvl9, Lvl10],[Nada,Nada,Nada],[Nada,Nada,Back]], niveis) (0,0) 
 draw (Selecionador Nivel5 Theme1, (x,y), _, _, niveis, _, _, bg,_) =
-    return $ Pictures $ levels (Show5 , niveis) : backgroundsN (NiveisGeral, bg) : drawNiveis ([[Nada, Nada, Nada, Nada, Select], [Lvl1, Lvl2, Lvl3, Lvl4, Lvl5],
+    return $ Pictures $ backgroundsN (NiveisGeral, bg) : levels (Show5 , niveis) : drawNiveis ([[Nada, Nada, Nada, Nada, Select], [Lvl1, Lvl2, Lvl3, Lvl4, Lvl5],
                                                                                                 [Nada, Nada, Nada, Nada, Nada], [Lvl6, Lvl7, Lvl8, Lvl9, Lvl10],[Nada,Nada,Nada],[Nada,Nada,Back]], niveis) (0,0) 
 draw (Selecionador Nivel6 Theme1, (x,y), _, _, niveis, _, _, bg,_) =
-    return $ Pictures $ levels (Show6 , niveis) : backgroundsN (NiveisGeral, bg) : drawNiveis ([[Nada, Nada, Nada, Nada, Nada], [Lvl1, Lvl2, Lvl3, Lvl4, Lvl5],
+    return $ Pictures $ backgroundsN (NiveisGeral, bg) : levels (Show6 , niveis) : drawNiveis ([[Nada, Nada, Nada, Nada, Nada], [Lvl1, Lvl2, Lvl3, Lvl4, Lvl5],
                                                                                                 [Select, Nada, Nada, Nada, Nada], [Lvl6, Lvl7, Lvl8, Lvl9, Lvl10],[Nada,Nada,Nada],[Nada,Nada,Back]], niveis) (0,0) 
 draw (Selecionador Nivel7 Theme1, (x,y), _, _, niveis, _, _, bg,_) =
-    return $ Pictures $ levels (Show7 , niveis) : backgroundsN (NiveisGeral, bg) : drawNiveis ([[Nada, Nada, Nada, Nada, Nada], [Lvl1, Lvl2, Lvl3, Lvl4, Lvl5],
+    return $ Pictures $ backgroundsN (NiveisGeral, bg) : levels (Show7 , niveis) : drawNiveis ([[Nada, Nada, Nada, Nada, Nada], [Lvl1, Lvl2, Lvl3, Lvl4, Lvl5],
                                                                                                 [Nada, Select, Nada, Nada, Nada], [Lvl6, Lvl7, Lvl8, Lvl9, Lvl10],[Nada,Nada,Nada],[Nada,Nada,Back]], niveis) (0,0) 
 draw (Selecionador Nivel8 Theme1, (x,y), _, _, niveis, _, _, bg,_) =
-    return $ Pictures $ levels (Show8 , niveis) : backgroundsN (NiveisGeral, bg) : drawNiveis ([[Nada, Nada, Nada, Nada, Nada], [Lvl1, Lvl2, Lvl3, Lvl4, Lvl5],
+    return $ Pictures $ backgroundsN (NiveisGeral, bg) : levels (Show8 , niveis) : drawNiveis ([[Nada, Nada, Nada, Nada, Nada], [Lvl1, Lvl2, Lvl3, Lvl4, Lvl5],
                                                                                                 [Nada, Nada, Select, Nada, Nada], [Lvl6, Lvl7, Lvl8, Lvl9, Lvl10],[Nada,Nada,Nada],[Nada,Nada,Back]], niveis) (0,0) 
 draw (Selecionador Nivel9 Theme1, (x,y), _, _, niveis, _, _, bg,_) =
-    return $ Pictures $ levels (Show9 , niveis) : backgroundsN (NiveisGeral, bg) : drawNiveis ([[Nada, Nada, Nada, Nada, Nada], [Lvl1, Lvl2, Lvl3, Lvl4, Lvl5],
+    return $ Pictures $ backgroundsN (NiveisGeral, bg) : levels (Show9 , niveis) : drawNiveis ([[Nada, Nada, Nada, Nada, Nada], [Lvl1, Lvl2, Lvl3, Lvl4, Lvl5],
                                                                                                 [Nada, Nada, Nada, Select, Nada], [Lvl6, Lvl7, Lvl8, Lvl9, Lvl10],[Nada,Nada,Nada],[Nada,Nada,Back]], niveis) (0,0) 
 draw (Selecionador Nivel10 Theme1, (x,y), _, _, niveis, _, _, bg,_) =
-    return $ Pictures $ levels (Show10 , niveis) : backgroundsN (NiveisGeral, bg) : drawNiveis ([[Nada, Nada, Nada, Nada, Nada], [Lvl1, Lvl2, Lvl3, Lvl4, Lvl5],
+    return $ Pictures $ backgroundsN (NiveisGeral, bg) : levels (Show10 , niveis) : drawNiveis ([[Nada, Nada, Nada, Nada, Nada], [Lvl1, Lvl2, Lvl3, Lvl4, Lvl5],
                                                                                                 [Nada, Nada, Nada, Nada, Select], [Lvl6, Lvl7, Lvl8, Lvl9, Lvl10],[Nada,Nada,Nada],[Nada,Nada,Back]], niveis) (0,0) 
 draw (Selecionador Voltar Theme1, (x,y), _, _, niveis, _, _, bg,_) =
     return $ Pictures $ backgroundsN (NiveisGeral, bg) : drawNiveis ([[Nada, Nada, Nada, Nada, Nada], [Lvl1, Lvl2, Lvl3, Lvl4, Lvl5],
@@ -495,6 +495,7 @@ As mesmas estão organizadas de acordo com cada parte do 'jogo', __menu__, __niv
 reageEvento :: Event -> EstadoGloss -> IO EstadoGloss
 
 --- Menu ---
+
 reageEvento (EventKey (SpecialKey KeyEsc) Down _ _) (Controlador _ _, _, _, _, _, _, _, _, _) =
     exitSuccess
 

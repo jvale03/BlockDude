@@ -144,7 +144,6 @@ levels (Show8, niveis) = niveis !! 19
 levels (Show9, niveis) = niveis !! 20
 levels (Show10, niveis) = niveis !! 21
 
-
 --------------------------
 --- Desenhar Intrucoes ---
 --------------------------
@@ -183,21 +182,19 @@ victory (Level, vitoria) = vitoria !! 5
 --- Função para backgrounds ---
 
 backgroundsDB :: (Tipos, [Picture]) -> Picture
-backgroundsDB (NiveisGeral, x) = x !! 1
 backgroundsDB (OpcoesGeral, x) = x !! 0
-backgroundsDB (GameGeral, x) = x !! 4
+backgroundsDB (NiveisGeral, x) = x !! 1
+backgroundsDB (GameGeral, x) = x !! 2
 
 backgroundsN :: (Tipos,[Picture]) -> Picture
-backgroundsN (NiveisGeral, x) = x !! 2
-backgroundsN (OpcoesGeral, x) = x !! 3
-backgroundsN (GameGeral, x) = x !! 4
+backgroundsN (NiveisGeral, x) = x !! 3
+backgroundsN (OpcoesGeral, x) = x !! 4
+backgroundsN (GameGeral, x) = x !! 5
 
 backgroundsA :: (Tipos,[Picture]) -> Picture
-backgroundsA (GameGeral, x) = x !! 5
-backgroundsA (NiveisGeral, x) = x !! 6
-backgroundsA (OpcoesGeral, x) = x !! 7
-
-
+backgroundsA (GameGeral, x) = x !! 6
+backgroundsA (NiveisGeral, x) = x !! 7
+backgroundsA (OpcoesGeral, x) = x !! 8
 
 --- Função para encontrar a porta! ---
 
