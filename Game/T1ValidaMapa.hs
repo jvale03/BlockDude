@@ -19,16 +19,6 @@ import Data.Ord (comparing)
 validaPotencialMapa mapa = validablocos mapa && validaporta mapa && validaCaixaFlutua mapa
                            && validavazio mapa && validabase mapa
 
-
-{- |
-A função 'validablocos' retorna um @Bool@ se o mapa não tiver /pecas/ nas mesmas
-coordenadas. Sendo composta por 5 auxiliares da seguinte forma:
-
->>> validablocos [(Bloco,(5,5)),(Caixa,(5,5))]
-False
->>> validablocos [(Bloco,(0,1)),(Bloco,(1,1))]
-True
--}
 {- |
 == Auxiliares
 -}

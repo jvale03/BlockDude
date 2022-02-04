@@ -26,27 +26,22 @@ resolveJogo i jogo
 
 {- |
 Esta função tem o nome de auxiliar, no entanto, é a função principal de todo o /Bot/.
--}
-{- |
+
 Com o __acumulador__ 'jogadas', é possível armazenar a lista de jogadas que o /Bot/ vai fazendo até
 chegar à 'Porta' ¹, excluindo depois aqueles que ele fez mas que __não__ chegaram à 'Porta' através do tamanho
 da lista com as jogadas, ou seja, se o tamanho da lista for igual ao número de jogadas, então já nao
 há mais jogadas possiveis e por isso, se não chegou à 'Porta', então essa não é uma solução! Nesse caso, irá devolver uma lista vazia!
--}
-{- |
+
 ¹ /(sabe-se que chegou à 'Porta', pois através das coordenadas do personagem, sabe-se a posição que ele ocupa
 nas listas do mapa. Se após descobrir a 'Peca' nas respetivas coordenadas a mesma for igual à 'Porta', 
 então a função irá devolver a lista de movimentos correspondente!)/
--}
-{- |
+
 'num' significa o número de 'jogadas' dados pelo utilizador. A sua utilidade na função foi explicada no paragrafo
 anterior. 
--}
-{- |
+
 __ @x < 0 = []@ __: este caso de paragem em específico serve para cortar os casos em que o 'Jogador' sai do mapa às vezes se não tiver
 muros a volta, o personagem pode sair do mapa e dar casos negativos, por exemplo.
--}
-{- |
+
 Por fim, após o 'otherwise', a função testa sempre se a posição em que se encontra o boneco (para as quatro jogadas
 possíveis), assim como o estado do mapa, ja foram repetidos alguma vez. Isto é, se as 'Pecas' e o estado do personagem estiverem iguais ao que já estiveram alguma vez, 
 então a função não faz nada. No caso de ser diferente, a função irá juntar esse movimento, 
@@ -62,9 +57,8 @@ que proporcionou um Mapa diferente, à lista de listas de 'jogadas'!
 >>> moveJogador (Jogo [[Bloco,Porta,Vazio,Vazio,Bloco],[Bloco,Bloco,Bloco,Bloco,Bloco]] (Jogador (3,0) Este False)) AndarDireita)
 [(Jogo [[Bloco,Porta,Vazio,Vazio,Bloco],[Bloco,Bloco,Bloco,Bloco,Bloco]] (Jogador (3,0) Este False))]
 
-Estes exemplos são apenas para o que a função faz no otherwise!
--}
-{- | 
+Estes exemplos são apenas para o que a função faz no 'otherwise'!
+ 
 O aspeto mais importante nesta função é o teste de igualdade, pois é isso que vai fazer devolver sempre a jogada
 com o menor número de movimentos possíveis, pois rejeita aqueles que não afetam o mapa, ou seja, desnecessários!
 -}

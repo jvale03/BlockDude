@@ -20,9 +20,9 @@ correrMovimentos jogo (h:t) = correrMovimentos (moveJogador jogo h) t
 
 {- | Esta função aplica o efeito de um comando (i.e. Movimento) sobre o jogador.
 
-== Andar para a esquerda:
+== Andar para a esquerda e direita:
 
-Caso o movimento introduzido seja "AndarEsquerda", a função vai avaliar se o jogador pode realizar esse movimento através de uma série de condições. Condições estas:
+Caso o movimento introduzido seja "AndarEsquerda","AndarDireita", a função vai avaliar se o jogador pode realizar esse movimento através de uma série de condições. Condições estas:
      
      1 - Existe um bloco à esquerda do jogador;
      
@@ -33,20 +33,6 @@ Desta forma, caso o jogador não carregue uma caixa, este só alterará a sua po
 Por outro lado, se carregar uma caixa, só poderá alterar a sua posição se a condição 1 e 2 forem falsas.
 
 Caso contrário a função irá devolver o mesmo Jogo, com o jogador virado para o lado que tentou andar mas não consegiu.
-
-== Andar para a direita:
-
-Caso o movimento introduzido seja "AndarDireita", a função vai avaliar se o jogador pode realizar esse movimento através de uma série de condições. Condições estas:
-     
-     1 - Existe um bloco à direita do jogador;
-     
-     2 - Se o jogador carrega uma caixa, existe um bloco diretamente por cima do bloco que fica à direita do jogador.
-
- Desta forma, caso o jogador não carregue uma caixa, este só alterará a sua posição se a condição 1 for falsa.
- 
- Por outro lado, se carregar uma caixa, só poderá alterar a sua posição se a condição 1 e 2 forem falsas.
- 
- Caso contrário a função irá devolver o mesmo Jogo, com o jogador virado para o lado que tentou andar mas não consegiu.
 
  == Trepar:
 
@@ -151,8 +137,6 @@ moveJogador (Jogo mapa (Jogador (x,y) direcao carrega)) InterageCaixa
 == Exemplos:
 @
  Exemplo 1 : encontra [[Bloco,Vazio,Vazio,Vazio,Bloco],[Bloco,Vazio,Vazio,Vazio,Bloco],[Bloco,Porta,Vazio,Caixa,Bloco],[Bloco,Bloco,Bloco,Bloco,Bloco]] 2 1 = Porta
-
- Exemplo 2 : encontra [[Bloco,Vazio,Vazio,Bloco],[Bloco,Vazio,Vazio,Bloco],[Bloco,Caixa,Vazio,Bloco],[Bloco,Bloco,Bloco,Bloco]] 1 1 = Vazio
 @
 -}
 
@@ -188,8 +172,6 @@ encontra2 (h:t) e = if e > 0
 == Exemplos:
 @
  Exemplo 1 : blocoCaixaEsquerdaSuperior [[Bloco,Vazio,Vazio,Vazio,Bloco],[Bloco,Vazio,Vazio,Vazio,Bloco],[Bloco,Porta,Vazio,Caixa,Bloco],[Bloco,Bloco,Bloco,Bloco,Bloco]] (3,1) = 3
-
- Exemplo 2 : blocoCaixaEsquerdaSuperior [[Bloco,Vazio,Vazio,Bloco],[Bloco,Vazio,Vazio,Bloco],[Bloco,Caixa,Vazio,Bloco],[Bloco,Bloco,Bloco,Bloco]] (2,2) = 3
 @
 -}
 
@@ -201,8 +183,6 @@ blocoCaixaEsquerdaSuperior mapa (x,y) = minimum (blocosCaixasEsquerda mapa (x,y)
 == Exemplos:
 @
  Exemplo 1 : blocosCaixasEsquerda [[Bloco,Vazio,Vazio,Vazio,Bloco],[Bloco,Vazio,Vazio,Vazio,Bloco],[Bloco,Porta,Vazio,Caixa,Bloco],[Bloco,Bloco,Bloco,Bloco,Bloco]] (3,1) = [3]
-
- Exemplo 2 : blocosCaixasEsquerda [[Bloco,Vazio,Vazio,Bloco],[Bloco,Vazio,Vazio,Bloco],[Bloco,Caixa,Vazio,Bloco],[Bloco,Bloco,Bloco,Bloco]] (2,2) = [3]
 @
 -}
 
@@ -218,8 +198,6 @@ blocosCaixasEsquerda mapa (x,y) ordenada = if ordenada <= length mapa
 == Exemplos:
 @
  Exemplo 1 : blocoCaixaDireitaSuperior [[Bloco,Vazio,Vazio,Vazio,Bloco],[Bloco,Vazio,Vazio,Vazio,Bloco],[Bloco,Porta,Caixa,Caixa,Bloco],[Bloco,Bloco,Bloco,Bloco,Bloco]] (2,2) = 2
-
- Exemplo 2 : blocoCaixaDireitaSuperior [[Bloco,Vazio,Vazio,Bloco],[Bloco,Vazio,Vazio,Bloco],[Bloco,Caixa,Vazio,Bloco],[Bloco,Bloco,Bloco,Bloco]] (1,1) = 3
 @
 -}
 
@@ -241,8 +219,6 @@ blocosCaixasDireita mapa (x,y) ordenada = if ordenada <= length mapa
 == Exemplos:
 @
  Exemplo 1 : adicionaCaixaOesteMapa1 [[Bloco,Vazio,Vazio,Vazio,Bloco],[Bloco,Vazio,Vazio,Vazio,Bloco],[Bloco,Bloco,Bloco,Bloco,Bloco]] (2,1) = [[Bloco,Vazio,Vazio,Vazio,Bloco],[Bloco,Caixa,Vazio,Vazio,Bloco],[Bloco,Bloco,Bloco,Bloco,Bloco]]
-
- Exemplo 2 : adicionaCaixaOesteMapa1 [[Bloco,Vazio,Vazio,Vazio,Bloco],[Bloco,Vazio,Vazio,Vazio,Bloco],[Bloco,Caixa,Vazio,Vazio,Bloco],[Bloco,Bloco,Bloco,Bloco,Bloco]] (3,2) = [[Bloco,Vazio,Vazio,Vazio,Bloco],[Bloco,Vazio,Vazio,Vazio,Bloco],[Bloco,Caixa,Caixa,Vazio,Bloco],[Bloco,Bloco,Bloco,Bloco,Bloco]]
 @
 -}
 
@@ -254,8 +230,6 @@ adicionaCaixaOesteMapa1 mapa (x,y) = take ((blocoCaixaEsquerdaSuperior mapa (x,y
 == Exemplos:
 @
  Exemplo 1 : adicionaCaixaOesteMapa2 [[Bloco,Vazio,Vazio,Vazio,Bloco],[Bloco,Bloco,Vazio,Vazio,Bloco],[Bloco,Bloco,Bloco,Bloco,Bloco]] (2,1) = [[Bloco,Caixa,Vazio,Vazio,Bloco],[Bloco,Bloco,Vazio,Vazio,Bloco],[Bloco,Bloco,Bloco,Bloco,Bloco]]
-
- Exemplo 2 : adicionaCaixaOesteMapa2 [[Bloco,Vazio,Vazio,Vazio,Bloco],[Bloco,Vazio,Vazio,Vazio,Bloco],[Bloco,Caixa,Vazio,Vazio,Bloco],[Bloco,Bloco,Bloco,Bloco,Bloco]] (2,2) = [[Bloco,Vazio,Vazio,Vazio,Bloco],[Bloco,Caixa,Vazio,Vazio,Bloco],[Bloco,Caixa,Vazio,Vazio,Bloco],[Bloco,Bloco,Bloco,Bloco,Bloco]]
 @
 -}
 
@@ -273,8 +247,6 @@ adicionaCaixaEsteMapa1 mapa (x,y) = take ((blocoCaixaDireitaSuperior mapa (x,y))
 == Exemplos:
 @
  Exemplo 1 : adicionaCaixaEsteMapa2 [[Bloco,Vazio,Vazio,Vazio,Bloco],[Bloco,vazio,Vazio,Bloco,Bloco],[Bloco,Bloco,Bloco,Bloco,Bloco]] (2,1) = [[Bloco,Vazio,Vazio,Caixa,Bloco],[Bloco,Vazio,Vazio,Bloco,Bloco],[Bloco,Bloco,Bloco,Bloco,Bloco]]
-
- Exemplo 2 : adicionaCaixaEsteMapa2 [[Bloco,Vazio,Vazio,Vazio,Bloco],[Bloco,Vazio,Vazio,Vazio,Bloco],[Bloco,Vazio,Vazio,Caixa,Bloco],[Bloco,Bloco,Bloco,Bloco,Bloco]] (2,2) = [[Bloco,Vazio,Vazio,Vazio,Bloco],[Bloco,Vazio,Vazio,Caixa,Bloco],[Bloco,Vazio,Vazio,Caixa,Bloco],[Bloco,Bloco,Bloco,Bloco,Bloco]]
 @
 -}
 
@@ -298,8 +270,6 @@ removeCaixaOesteMapa mapa (x,y) = take y mapa ++ [removeCaixaLinha (encontra1 ma
 == Exemplos:
 @
  Exemplo 1 : removeCaixaEsteMapa [[Bloco,Vazio,Vazio,Vazio,Bloco],[Bloco,Vazio,Vazio,Caixa,Bloco],[Bloco,Bloco,Bloco,Bloco,Bloco]] (2,1) = [[Bloco,Vazio,Vazio,Vazio,Bloco],[Bloco,Vazio,Vazio,Vazio,Bloco],[Bloco,Bloco,Bloco,Bloco,Bloco]]
-
- Exemplo 2 : removeCaixaEsteMapa [[Bloco,Vazio,Vazio,Vazio,Bloco],[Bloco,Caixa,Vazio,Vazio,Bloco],[Bloco,Caixa,Vazio,Caixa,Bloco],[Bloco,Bloco,Bloco,Bloco,Bloco]] (2,2) = [[Bloco,Vazio,Vazio,Vazio,Bloco],[Bloco,Caixa,Vazio,Vazio,Bloco],[Bloco,Caixa,Vazio,Vazio,Bloco],[Bloco,Bloco,Bloco,Bloco,Bloco]]
 @
 -}
 
