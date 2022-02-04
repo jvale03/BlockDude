@@ -45,8 +45,6 @@ separarLinhas (Jogo mapa (Jogador (x,y) direcao carrega)) tiraLinha = if tiraLin
 
 == Exemplos:
 @
- Exemplo 1 : placeCaixa (Jogo ([[Bloco,Vazio,Vazio,Vazio,Bloco],[Bloco,Vazio,Vazio,Vazio,Bloco],[Bloco,Vazio,Vazio,Caixa,Bloco],[Bloco,Bloco,Bloco,Bloco,Bloco]]) (Jogador (1,2) Este False)) = "X   XX   XX> CXXXXXX"
-
  Exemplo 2 : placeCaixa (Jogo ([[Bloco,Vazio,Vazio,Bloco],[Bloco,Vazio,Caixa,Bloco],[Bloco,Bloco,Bloco,Bloco]]) (Jogador (1,1) Oeste True)) = "XC XX<CXXXXX"
 @
 -}
@@ -76,8 +74,6 @@ placeJogador (Jogo mapa (Jogador (x,y) direcao carrega)) = if direcao == Oeste
 == Exemplos:
 @
  Exemplo 1 : placePecas (Jogo ([[Bloco,Vazio,Vazio,Vazio,Bloco],[Bloco,Vazio,Vazio,Vazio,Bloco],[Bloco,Vazio,Vazio,Caixa,Bloco],[Bloco,Bloco,Bloco,Bloco,Bloco]]) (Jogador (1,2) Este False)) = "X   XX   XX  CXXXXXX"
-
- Exemplo 2 : placePecas (Jogo ([[Bloco,Vazio,Vazio,Bloco],[Bloco,Vazio,Caixa,Bloco],[Bloco,Bloco,Bloco,Bloco]]) (Jogador (1,1) Oeste True)) = "X  XX CXXXXX"
 @
 -}
 
@@ -107,8 +103,6 @@ areaMapa mapa = length mapa * comprimentoMapa mapa
 == Exemplos:
 @
  Exemplo 1 : comprimentoMapa [[Bloco,Vazio,Vazio,Vazio,Bloco],[Bloco,Vazio,Vazio,Vazio,Bloco],[Bloco,Vazio,Vazio,Caixa,Bloco],[Bloco,Bloco,Bloco,Bloco,Bloco]] = 5
-
- Exemplo 2 : comprimentoMapa [[Bloco,Vazio,Vazio,Bloco],[Bloco,Vazio,Caixa,Bloco],[Bloco,Bloco,Bloco,Bloco]] = 4
 @
 -}
 

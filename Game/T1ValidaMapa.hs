@@ -77,12 +77,6 @@ testbool xx x
 {- |
 Composta por uma auxiliar, 'validaporta' permite concluir se 
 existe __uma e uma só__ 'Porta' no mapa.
-
->>> [(Bloco,(3,2)),(Porta,(2,2))]
-True
--}
-{- |
-== Auxiliar
 -}
 validaporta :: [(Peca,Coordenadas)] -> Bool
 validaporta [] = False
@@ -94,9 +88,6 @@ validaporta porta
 {- |
 'portaaux' devolve uma lista em que as peças são iguais 
 a 'Porta'.
-
->>> portaaux [(Bloco,(2,1))]
-[ ]
 
 >>> portaaux [(Bloco,(2,1)),(Porta,(2,2))]
 [Porta] 
@@ -115,9 +106,6 @@ portaaux ((peca,(x,y)):t)
 Função que avalia se nenhuma 'Caixa' flutua, ou seja, se todas as peças 'Caixa' 
 têm por baixo outra 'Caixa' __ou__ um 'Bloco' e se a __ultima__ 'Caixa' está em cima de um 'Bloco'.
 
->>> validaCaixaFlutua [(Bloco,(1,2)),(Caixa,(1,1)),(Bloco,(2,3)),(Vazio,(4,5)),(Caixa,(2,2)),(Caixa,(2,1)),(Vazio,(0,0)),(Bloco,(0,2))]
-True
-
 >>> validaCaixaFlutua [(Vazio,(0,0)),(Vazio,(0,1)),(Bloco,(0,2)),(Bloco,(1,2)),(Bloco,(2,2)),(Caixa,(2,1)),(Vazio,(3,2)),(Caixa,(3,1))]
 False
 -}
@@ -134,9 +122,6 @@ e a lista de /coordenadas/ das peças 'Bloco' __subtraindo__ uma
 unidade a __y__. A partir destas listas, testa se __nenhuma__ 
 'Caixa' flutua.
 
->>> validaCaixa [(1,0),(2,1),(2,0)] [(1,0),(2,1),(2,0)] [(1,1),(2,2),(0,1)]
-True
-
 >>> validaCaixa [(2,1),(3,1)] [(2,0),(3,0)] [(0,1),(1,1),(2,1)]
 False
 -}
@@ -152,8 +137,6 @@ Função que __armazena__ as /coordenadas/ de todas as peças 'Caixa' do mapa.
 >>> armazenaCaixaCoord [(Bloco,(1,2)),(Caixa,(1,1)),(Bloco,(2,3)),(Vazio,(4,5)),(Caixa,(2,2)),(Caixa,(2,1)),(Vazio,(0,0)),(Bloco,(0,2))]
 [(1,1),(2,2),(2,1)]
 
->>> armazenaCaixaCoord [(Vazio,(0,0)),(Vazio,(0,1)),(Bloco,(0,2)),(Bloco,(1,2)),(Bloco,(2,2)),(Caixa,(2,1)),(Vazio,(3,2)),(Caixa,(3,1))]
-[(2,1),(3,1)]
 -}
 armazenaCaixaCoord :: [(Peca,Coordenadas)] -> [Coordenadas]
 armazenaCaixaCoord [] = []
@@ -168,8 +151,6 @@ __subtraindo-lhes__ 1 unidade a __y__.
 >>> armazenaCaixaCoord1 [(Bloco,(1,2)),(Caixa,(1,1)),(Bloco,(2,3)),(Vazio,(4,5)),(Caixa,(2,2)),(Caixa,(2,1)),(Vazio,(0,0)),(Bloco,(0,2))]
 [(1,0),(2,1),(2,0)]
 
->>> armazenaCaixaCoord1 [(Vazio,(0,0)),(Vazio,(0,1)),(Bloco,(0,2)),(Bloco,(1,2)),(Bloco,(2,2)),(Caixa,(2,1)),(Vazio,(3,2)),(Caixa,(3,1))]
-[(2,0),(3,0)]
 -}
 armazenaCaixaCoord1 :: [(Peca,Coordenadas)] -> [Coordenadas]
 armazenaCaixaCoord1 [] = []
@@ -180,9 +161,6 @@ armazenaCaixaCoord1 ((peca,(x,y)):cl) | peca == Caixa = (x,y-1) : armazenaCaixaC
 {- |
 Função que armazena as /coordenadas/ de todo o 'Bloco' do mapa,
 __subtraindo-lhes__ 1 unidade a __y__.
-
->>> armazenaBlocoCoord [(Bloco,(1,2)),(Caixa,(1,1)),(Bloco,(2,3)),(Vazio,(4,5)),(Caixa,(2,2)),(Caixa,(2,1)),(Vazio,(0,0)),(Bloco,(0,2))]
-[(1,1),(2,2),(0,1)]
 
 >>> armazenaBlocoCoord [(Vazio,(0,0)),(Vazio,(0,1)),(Bloco,(0,2)),(Bloco,(1,2)),(Bloco,(2,2)),(Caixa,(2,1)),(Vazio,(3,2)),(Caixa,(3,1))]
 [(0,1),(1,1),(2,1)]
@@ -268,9 +246,6 @@ testa a __base do mapa__, __não__ podendo haver espaços vazios, impedindo qued
 
 >>> validabase [(Bloco,(0,0)),(Bloco,(1,0)),(Bloco,(2,1)),(Bloco(3,0))]
 True
-
->>> validabase [(Bloco,(0,0)),(Bloco,(2,0)),(Bloco,(2,1)),(Bloco(3,0))]
-False
 -}
 {- | 
 == Auxiliares

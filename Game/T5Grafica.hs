@@ -514,9 +514,6 @@ do 'jogo'.
 
 As mesmas estão organizadas de acordo com cada parte do 'jogo', __menu__, __niveis__, __ModoJogo__, __etc__.
 -}
-{- | 
-== Reage Tempo
--}
 
 reageEvento :: Event -> EstadoGloss -> IO EstadoGloss
 

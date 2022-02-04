@@ -27,19 +27,6 @@ desconstroiMapa [] = []
 desconstroiMapa x = ordena (cortavazio (function x (concat x) (0,0)))
 
 {- |
-@
-buildMatrix [] = []
-buildMatrix [(peca,(x,y))] = replicate (y+1) (replicate (x+1) Vazio)
-buildMatrix f@((peca,(x,y)):t) = replicate   
-    ((maximum (listy f))+1) (replicate ((maximum (listx f))+1) Vazio)
-        where 
-            listx [] = []
-            listx ((peca,(x,y)):t) = x:listx t    
-            listy [] = []
-            listy ((peca,(x,y)):t) = y:listy t
-@            
--}
-{- |
 Função que __cria__ uma /matriz/ com as dimensões do mapa em que @todos@ os elementos 
 da mesma são 'Vazio'. Ficando ja assim declarados também os elementos por 
 omissão.
@@ -54,7 +41,6 @@ buildMatrix f@((peca,(x,y)):t) = replicate
             listx ((peca,(x,y)):t) = x:listx t
             listy [] = []
             listy ((peca,(x,y)):t) = y:listy t
-
 
 {- |
 Esta função __substitui__ na /matriz/ construida na auxiliar anterior, os 

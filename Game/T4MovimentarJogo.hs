@@ -164,9 +164,7 @@ encontra (h:t) e1 e2 = encontra2 (encontra1 (h:t) e1) e2
 
 == Exemplos:
 @
- Exemplo 1 : encontra1 [[Bloco,Vazio,Vazio,Vazio,Bloco],[Bloco,Vazio,Vazio,Vazio,Bloco],[Bloco,Porta,Vazio,Caixa,Bloco],[Bloco,Bloco,Bloco,Bloco,Bloco]] 2 = [[Bloco,Porta,Vazio,Caixa,Bloco]]
-
- Exemplo 2 : encontra1 [[Bloco,Vazio,Vazio,Bloco],[Bloco,Vazio,Vazio,Bloco],[Bloco,Caixa,Vazio,Bloco],[Bloco,Bloco,Bloco,Bloco]] 1 = [Bloco,Vazio,Vazio,Bloco]
+ Exemplo 1 : encontra1 [[Bloco,Vazio,Vazio,Bloco],[Bloco,Vazio,Vazio,Bloco],[Bloco,Caixa,Vazio,Bloco],[Bloco,Bloco,Bloco,Bloco]] 1 = [Bloco,Vazio,Vazio,Bloco]
 @
 -}
 
