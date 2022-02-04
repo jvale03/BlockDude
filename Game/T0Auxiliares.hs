@@ -7,24 +7,25 @@ Módulo para o uso de auxiliares da parte Gráfica do jogo.
 -}
 
 module T0Auxiliares (
-      -- * Desenhar Menu
+      -- * Desenhar Todos
+      -- ** Desenhar Menu
     drawMenu, drawMenu2, opcoes,
-      -- * Desenhar Mapa
-      -- *** Modo BlockDude
+      -- ** Desenhar Mapa
+      -- **** Modo BlockDude
       drawMapaN, drawMapa2N, drawPlayerN, pecasN, 
-      -- *** Modo DragonBall
+      -- **** Modo DragonBall
       drawMapaDB, drawMapa2DB, drawPlayerDB, pecasDB,
-      -- *** Modo AmongUs
+      -- **** Modo AmongUs
     drawMapaA, drawMapa2A, drawPlayerA, pecasA,
-      -- * Desenhar Niveis
+      -- ** Desenhar Niveis
     drawNiveis, drawNiveis2, levels,
-      -- * Desenhar Instruções
+      -- ** Desenhar Instruções
     drawInstrucoes, instruct,
-      -- * Desenhar Vitória
+      -- ** Desenhar Vitória
     drawVitoria, drawVitoria2, victory,
-      -- * Desenhar Background
+      -- ** Desenhar Background
     backgroundsN, backgroundsDB, backgroundsA, 
-      -- * Detetar Porta
+      -- ** Detetar Porta
     porta, findPorta
     ) where
 
@@ -42,6 +43,7 @@ Desta forma, é desenhado primeiro horizontalmente, portanto, começamos por usa
 elemento de uma 'lista' seja feito o distanciamento em __x__. 
 
  - Os inteiros em 'Translate' variam de acordo com aquilo que for o objetivo de reproduzir na tela.
+ - Aplica-se a todos os 'draw'
 -}
 
 drawMenu :: ([[Tipos]], [Picture]) -> (Int,Int) -> [Picture]
@@ -54,6 +56,7 @@ drawMenu ((h:t), menu) (x,y) = (Translate (fromIntegral (x*(100))) (-55) (Pictur
 Isto é, vai desenhando as colunas (verticalmente), usando também o 'Translate' mas em __y__.
 
  - Os inteiros em 'Translate' variam de acordo com aquilo que for o objetivo de reproduzir na tela.
+ - Aplica-se a todos os 'draw'
 -}
 
 drawMenu2 :: ([Tipos], [Picture]) -> Int -> [Picture]
@@ -63,7 +66,8 @@ drawMenu2 ((h:t), menu) y = (Translate (-400) (fromIntegral (y*65)) (opcoes (h, 
 {- | 
 Esta função utiliza os elementos da 'lista' para atribuir correspondência a cada 'Imagem' desejada!
 
- - Varia também de acordo com aquilo que cada um pretende reproduzir. 
+ - Varia também de acordo com aquilo que cada um pretende reproduzir.
+ - Aplica-se a todas as funções deste tipo! 
 -}
 
 opcoes :: (Tipos, [Picture]) -> Picture
@@ -86,89 +90,33 @@ opcoes (ATheme, menu) = menu !! 12
 --- Desenhar Parte do Mapa ---
 ------------------------------
 
-{- | 
-Através do 'Translate' e do uso da 'lista' de 'listas', é feito um distanciamento entre as 'Pictures'.
-Desta forma, é desenhado primeiro verticalmente, portanto, começamos por usar o 'Translate' para que, a cada
-elemento de uma 'lista' seja feito o distanciamento em __x__. 
-
- - Os inteiros em 'Translate' variam de acordo com aquilo que for o objetivo de reproduzir na tela.
--}
-
 drawMapaN :: (Mapa, [Picture]) -> (Int,Int) -> Float -> [Picture]
 drawMapaN ([], _) _ _ = []
 drawMapaN ((h:t), jogo) (x,y) b = (Translate (-600) (fromIntegral (y*(-48))) (Pictures (drawMapa2N (h, jogo) x b))) : (drawMapaN (t, jogo) (x,y+1) b)
-
-{- | 
-À semelhança da função anterior, aqui também é feito um distanciamento de 'Pictures', mas horizontalmente.
-
-Isto é, vai desenhando as linhas (horizontalmente), usando também o 'Translate' mas em __y__.
-
- - Os inteiros em 'Translate' variam de acordo com aquilo que for o objetivo de reproduzir na tela.
--}
 
 drawMapa2N :: ([Peca],[Picture]) -> Int -> Float -> [Picture]
 drawMapa2N ([], _) _ _ = []
 drawMapa2N ((h:t), jogo) x b = (Translate (fromIntegral (x*48)) 308 (pecasN (h, jogo) b)) : (drawMapa2N (t, jogo) (x+1) b)
 
-{- | 
-Ideologia de todas as outras, no entanto aplica-se ao jogador, simples quanto isto!
--}
-
 drawPlayerN :: ([Peca], (Int,Int), [Picture]) -> Float -> [Picture]
 drawPlayerN ([],(_,_), _) _ = []
 drawPlayerN ((h:t),(x,y), jogo) b = (Translate (fromIntegral ((x*(48))-600)) (fromIntegral (y*(-48))+308) (pecasN (h, jogo) b)) : (drawPlayerN (t,(x,y+1), jogo) b)
-
-{- | 
-Através do 'Translate' e do uso da 'lista' de 'listas', é feito um distanciamento entre as 'Pictures'.
-Desta forma, é desenhado primeiro verticalmente, portanto, começamos por usar o 'Translate' para que, a cada
-elemento de uma 'lista' seja feito o distanciamento em __x__. 
-
- - Os inteiros em 'Translate' variam de acordo com aquilo que for o objetivo de reproduzir na tela.
--}
 
 drawMapaDB :: (Mapa, [Picture]) -> (Int,Int) -> Float -> [Picture]
 drawMapaDB ([], _) _ _ = []
 drawMapaDB ((h:t), jogo) (x,y) b = (Translate (-600) (fromIntegral (y*(-48))) (Pictures (drawMapa2DB (h, jogo) x b))) : (drawMapaDB (t, jogo) (x,y+1) b)
 
-{- | 
-À semelhança da função anterior, aqui também é feito um distanciamento de 'Pictures', mas horizontalmente.
-
-Isto é, vai desenhando as linhas (horizontalmente), usando também o 'Translate' mas em __y__.
-
- - Os inteiros em 'Translate' variam de acordo com aquilo que for o objetivo de reproduzir na tela.
--}
-
 drawMapa2DB :: ([Peca],[Picture]) -> Int -> Float -> [Picture]
 drawMapa2DB ([], _) _ _ = []
 drawMapa2DB ((h:t), jogo) x b = (Translate (fromIntegral (x*48)) 308 (pecasDB (h, jogo) b)) : (drawMapa2DB (t, jogo) (x+1) b)
-
-{- | 
-Ideologia de todas as outras, no entanto aplica-se ao jogador, simples quanto isto!
--}
 
 drawPlayerDB :: ([Peca], (Int,Int), [Picture]) -> Float -> [Picture]
 drawPlayerDB ([],(_,_), _) _ = []
 drawPlayerDB ((h:t),(x,y), jogo) b = (Translate (fromIntegral ((x*(48))-600)) (fromIntegral (y*(-48))+308) (pecasDB (h, jogo) b)) : (drawPlayerDB (t,(x,y+1), jogo) b)
 
-{- | 
-Através do 'Translate' e do uso da 'lista' de 'listas', é feito um distanciamento entre as 'Pictures'.
-Desta forma, é desenhado primeiro verticalmente, portanto, começamos por usar o 'Translate' para que, a cada
-elemento de uma 'lista' seja feito o distanciamento em __x__. 
-
- - Os inteiros em 'Translate' variam de acordo com aquilo que for o objetivo de reproduzir na tela.
--}
-
 drawMapaA :: (Mapa, [Picture]) -> (Int,Int) -> Float -> [Picture]
 drawMapaA ([], _) _ _ = []
 drawMapaA ((h:t), jogo) (x,y) b = (Translate (-600) (fromIntegral (y*(-48))) (Pictures (drawMapa2A (h, jogo) x b))) : (drawMapaA (t, jogo) (x,y+1) b)
-
-{- | 
-À semelhança da função anterior, aqui também é feito um distanciamento de 'Pictures', mas horizontalmente.
-
-Isto é, vai desenhando as linhas (horizontalmente), usando também o 'Translate' mas em __y__.
-
- - Os inteiros em 'Translate' variam de acordo com aquilo que for o objetivo de reproduzir na tela.
--}
 
 drawMapa2A :: ([Peca],[Picture]) -> Int -> Float -> [Picture]
 drawMapa2A ([], _) _ _ = []
@@ -182,12 +130,6 @@ drawPlayerA :: ([Peca], (Int,Int), [Picture]) -> Float -> [Picture]
 drawPlayerA ([],(_,_), _) _ = []
 drawPlayerA ((h:t),(x,y), jogo) b = (Translate (fromIntegral ((x*(48))-600)) (fromIntegral (y*(-48))+308) (pecasA (h, jogo) b)) : (drawPlayerA (t,(x,y+1), jogo) b)
 
-{- | 
-Esta função utiliza os elementos da 'lista' para atribuir correspondência a cada 'Imagem' desejada!
-
- - Varia também de acordo com aquilo que cada um pretende reproduzir. 
--}
-
 pecasN :: (Peca, [Picture]) -> Float -> Picture
 pecasN (Porta, jogo) b
     | mod (round (b*50)) 200 < 100 = jogo !! 0
@@ -198,12 +140,6 @@ pecasN (Bloco, jogo) _ = jogo !! 4
 pecasN (Caixa, jogo) _ = jogo !! 5
 pecasN (Vazio, jogo) _ = Blank
 
-{- | 
-Esta função utiliza os elementos da 'lista' para atribuir correspondência a cada 'Imagem' desejada!
-
- - Varia também de acordo com aquilo que cada um pretende reproduzir. 
--}
-
 pecasA :: (Peca, [Picture]) -> Float -> Picture
 pecasA (Porta, jogo) _ = jogo !! 6
 pecasA (PersonagemD, jogo) _ = jogo !! 7
@@ -211,12 +147,6 @@ pecasA (PersonagemE, jogo) _ = jogo !! 8
 pecasA (Bloco, jogo) _ = jogo !! 9
 pecasA (Caixa, jogo) _ = jogo !! 10
 pecasA (Vazio, jogo) _ = Blank
-
-{- | 
-Esta função utiliza os elementos da 'lista' para atribuir correspondência a cada 'Imagem' desejada!
-
- - Varia também de acordo com aquilo que cada um pretende reproduzir. 
--}
 
 pecasDB :: (Peca, [Picture]) -> Float -> Picture
 pecasDB (Porta, jogo) _ = jogo !! 11
@@ -230,35 +160,13 @@ pecasDB (Vazio, jogo) _ = Blank
 --- Desenhar Niveis ---
 ----------------------- 
 
-{- | 
-Através do 'Translate' e do uso da 'lista' de 'listas', é feito um distanciamento entre as 'Pictures'.
-Desta forma, é desenhado primeiro horizontalmente, portanto, começamos por usar o 'Translate' para que, a cada
-elemento de uma 'lista' seja feito o distanciamento em __x__. 
-
- - Os inteiros em 'Translate' variam de acordo com aquilo que for o objetivo de reproduzir na tela.
--}
-
 drawNiveis :: ([[Tipos]], [Picture]) -> (Int,Int) -> [Picture]
 drawNiveis ([], _) _ = []
 drawNiveis ((h:t), niveis) (x,y) = (Translate (fromIntegral (x*(85))) (-70) (Pictures (drawNiveis2 (h, niveis) y))) : (drawNiveis (t, niveis) (x+1,y))
 
-{- | 
-À semelhança da função anterior, aqui também é feito um distanciamento de 'Pictures', mas verticalmente.
-
-Isto é, vai desenhando as colunas (verticalmente), usando também o 'Translate' mas em __y__.
-
- - Os inteiros em 'Translate' variam de acordo com aquilo que for o objetivo de reproduzir na tela.
--}
-
 drawNiveis2 :: ([Tipos], [Picture]) -> Int -> [Picture]
 drawNiveis2 ([], _) _ = []
 drawNiveis2 ((h:t), niveis) y = (Translate (-380) (fromIntegral (y*55)) (levels (h, niveis))) : (drawNiveis2 (t, niveis) (y-1))
-
-{- | 
-Esta função utiliza os elementos da 'lista' para atribuir correspondência a cada 'Imagem' desejada!
-
- - Varia também de acordo com aquilo que cada um pretende reproduzir. 
--}
 
 levels :: (Tipos, [Picture]) -> Picture
 levels (Nada, niveis) = Blank
@@ -289,20 +197,9 @@ levels (Show10, niveis) = niveis !! 21
 --- Desenhar Intrucoes ---
 --------------------------
 
-{- | 
-Muito semelhante às anteriores, no entanto, aqui só precisamos desenhar verticalmente e portanto não ha necessidade
-de auxiliares. __ Varia em y__.
--}
-
 drawInstrucoes :: ([Tipos], [Picture]) -> Int -> [Picture]
 drawInstrucoes ([], _) _ = []
 drawInstrucoes ((h:t), instrucoes) y = (Translate 0 (fromIntegral (y*100)) (instruct (h,instrucoes))) : (drawInstrucoes (t,instrucoes) (y-1))
-
-{- | 
-Esta função utiliza os elementos da 'lista' para atribuir correspondência a cada 'Imagem' desejada!
-
- - Varia também de acordo com aquilo que cada um pretende reproduzir. 
--}
 
 instruct :: (Tipos, [Picture]) -> Picture
 instruct (Tips, instrucoes) = instrucoes !! 0
@@ -314,35 +211,13 @@ instruct (Select, instrucoes) = instrucoes !! 3
 --- Desenhar Vitoria ---
 ------------------------
 
-{- | 
-Através do 'Translate' e do uso da 'lista' de 'listas', é feito um distanciamento entre as 'Pictures'.
-Desta forma, é desenhado primeiro horizontalmente, portanto, começamos por usar o 'Translate' para que, a cada
-elemento de uma 'lista' seja feito o distanciamento em __x__. 
-
- - Os inteiros em 'Translate' variam de acordo com aquilo que for o objetivo de reproduzir na tela.
--}
-
 drawVitoria :: ([[Tipos]], [Picture]) -> (Int,Int) -> [Picture]
 drawVitoria ([], _) _ = []
 drawVitoria ((h:t), vitoria) (x,y) = (Translate (fromIntegral (x*(90))) (-50) (Pictures (drawVitoria2 (h, vitoria) y))) : (drawVitoria (t, vitoria) (x+1,y))
 
-{- | 
-À semelhança da função anterior, aqui também é feito um distanciamento de 'Pictures', mas verticalmente.
-
-Isto é, vai desenhando as colunas (verticalmente), usando também o 'Translate' mas em __y__.
-
- - Os inteiros em 'Translate' variam de acordo com aquilo que for o objetivo de reproduzir na tela.
--}
-
 drawVitoria2 :: ([Tipos], [Picture]) -> Int -> [Picture]
 drawVitoria2 ([], _) _ = []
 drawVitoria2 ((h:t), vitoria) y = (Translate (-150) (fromIntegral (y*65)) (victory (h, vitoria))) : (drawVitoria2 (t, vitoria) (y-1))
-
-{- | 
-Esta função utiliza os elementos da 'lista' para atribuir correspondência a cada 'Imagem' desejada!
-
- - Varia também de acordo com aquilo que cada um pretende reproduzir. 
--}
 
 victory :: (Tipos, [Picture]) -> Picture
 victory (Nada, vitoria) = Blank
@@ -370,22 +245,10 @@ backgroundsDB (OpcoesGeral, x) = x !! 0
 backgroundsDB (NiveisGeral, x) = x !! 1
 backgroundsDB (GameGeral, x) = x !! 2
 
-{- | 
-Esta função utiliza os elementos da 'lista' para atribuir correspondência a cada 'Imagem' desejada!
-
- - Varia também de acordo com aquilo que cada um pretende reproduzir. 
--}
-
 backgroundsN :: (Tipos,[Picture]) -> Picture
 backgroundsN (NiveisGeral, x) = x !! 3
 backgroundsN (OpcoesGeral, x) = x !! 4
 backgroundsN (GameGeral, x) = x !! 5
-
-{- | 
-Esta função utiliza os elementos da 'lista' para atribuir correspondência a cada 'Imagem' desejada!
-
- - Varia também de acordo com aquilo que cada um pretende reproduzir. 
--}
 
 backgroundsA :: (Tipos,[Picture]) -> Picture
 backgroundsA (GameGeral, x) = x !! 6
