@@ -177,13 +177,6 @@ encontra1 (h:t) e = if e > 0
                    else h
 
 {- | Devolve um elemento de uma lista.
-
-== Exemplos:
-@
- Exemplo 1 : encontra2 [Bloco,Porta,Vazio,Caixa,Bloco] 1 = Porta
-
- Exemplo 2 : encontra2 [Bloco,Vazio,Vazio,Bloco] 1 = Vazio
-@
 -}
 
 encontra2 :: [Peca] -> Int -> Peca
@@ -236,13 +229,6 @@ blocoCaixaDireitaSuperior :: Mapa -> Coordenadas -> Int
 blocoCaixaDireitaSuperior mapa (x,y) = minimum (blocosCaixasDireita mapa (x,y) (y+1))
 
 {- | Calcula as ordenadas de todas caixas e blocos com abcissa igual à abcissa do jogador mais uma unidade e com ordenada superior à do jogador.
-
-== Exemplos:
-@
- Exemplo 1 : blocosCaixasDireita [[Bloco,Vazio,Vazio,Vazio,Bloco],[Bloco,Vazio,Vazio,Vazio,Bloco],[Bloco,Porta,Caixa,Caixa,Bloco],[Bloco,Bloco,Bloco,Bloco,Bloco]] (2,2) = [2,3]
-
- Exemplo 2 : blocosCaixasDireita [[Bloco,Vazio,Vazio,Bloco],[Bloco,Vazio,Vazio,Bloco],[Bloco,Caixa,Vazio,Bloco],[Bloco,Bloco,Bloco,Bloco]] (1,1) = [3]
-@
 -}
 
 blocosCaixasDireita :: Mapa -> Coordenadas -> Int -> [Int]
@@ -279,13 +265,6 @@ adicionaCaixaOesteMapa2 :: Mapa -> Coordenadas -> Mapa
 adicionaCaixaOesteMapa2 mapa (x,y) = take (y-1) mapa ++ [adicionaCaixaLinha (encontra1 mapa (y-1)) (x-1,y)] ++ drop y mapa
 
 {- | Substitui um espaço vazio por uma caixa quando o jogador larga uma caixa. Usa as funções auxiliares blocoCaixaEsquerdaSuperior e adicionaCaixaLinha. Esta função só se aplica se o bloco à frente do jogador for vazio.
-
-== Exemplos:
-@
- Exemplo 1 : adicionaCaixaEsteMapa1 [[Bloco,Vazio,Vazio,Vazio,Bloco],[Bloco,Vazio,Vazio,Vazio,Bloco],[Bloco,Bloco,Bloco,Bloco,Bloco]] (2,1) = [[Bloco,Vazio,Vazio,Vazio,Bloco],[Bloco,Vazio,Vazio,Caixa,Bloco],[Bloco,Bloco,Bloco,Bloco,Bloco]]
-
- Exemplo 2 : adicionaCaixaEsteMapa1 [[Bloco,Vazio,Vazio,Vazio,Bloco],[Bloco,Vazio,Vazio,Vazio,Bloco],[Bloco,Caixa,Vazio,Vazio,Bloco],[Bloco,Bloco,Bloco,Bloco,Bloco]] (2,2) = [[Bloco,Vazio,Vazio,Vazio,Bloco],[Bloco,Vazio,Vazio,Vazio,Bloco],[Bloco,Caixa,Vazio,Caixa,Bloco],[Bloco,Bloco,Bloco,Bloco,Bloco]]
-@
 -}
 
 adicionaCaixaEsteMapa1 :: Mapa -> Coordenadas -> Mapa
@@ -305,26 +284,12 @@ adicionaCaixaEsteMapa2 :: Mapa -> Coordenadas -> Mapa
 adicionaCaixaEsteMapa2 mapa (x,y) = take (y-1) mapa ++ [adicionaCaixaLinha (encontra1 mapa (y-1)) (x+1,y)] ++ drop y mapa
 
 {- | Substitui um espaço vazio (" ") por uma caixa numa linha do mapa.
-
-== Exemplos:
-@
- Exemplo 1 : adicionaCaixaLinha [Bloco,Vazio,Vazio,Vazio,Bloco] (2,1) = [Bloco,Vazio,Vazio,Caixa,Bloco]
-
- Exemplo 2 : adicionaCaixaLinha [Bloco,Caixa,Vazio,Vazio,Bloco] (2,2) = [Bloco,Caixa,Vazio,Caixa,Bloco]
-@
 -}
 
 adicionaCaixaLinha :: [Peca] -> Coordenadas -> [Peca]
 adicionaCaixaLinha linha (x,y) = take x linha ++ [Caixa] ++ drop (x+1) linha
 
 {- | Substitui um bloco com uma caixa por um bloco vazio. Esta função usa a função auxiliar removeCaixaLinha.
-
-== Exemplos:
-@
- Exemplo 1 : removeCaixaOesteMapa [[Bloco,Vazio,Vazio,Vazio,Bloco],[Bloco,Caixa,Vazio,Vazio,Bloco],[Bloco,Bloco,Bloco,Bloco,Bloco]] (2,1) = [[Bloco,Vazio,Vazio,Vazio,Bloco],[Bloco,Vazio,Vazio,Vazio,Bloco],[Bloco,Bloco,Bloco,Bloco,Bloco]]
-
- Exemplo 2 : removeCaixaOesteMapa [[Bloco,Vazio,Vazio,Vazio,Bloco],[Bloco,Vazio,Vazio,Caixa,Bloco],[Bloco,Caixa,Vazio,Caixa,Bloco],[Bloco,Bloco,Bloco,Bloco,Bloco]] (2,2) = [[Bloco,Vazio,Vazio,Vazio,Bloco],[Bloco,Vazio,Vazio,Caixa,Bloco],[Bloco,Vazio,Vazio,Caixa,Bloco],[Bloco,Bloco,Bloco,Bloco,Bloco]]
-@
 -}
 
 removeCaixaOesteMapa :: Mapa -> Coordenadas -> Mapa
@@ -344,13 +309,6 @@ removeCaixaEsteMapa :: Mapa -> Coordenadas -> Mapa
 removeCaixaEsteMapa mapa (x,y) = take y mapa ++ [removeCaixaLinha (encontra1 mapa y) (x+1,y)] ++ drop (y+1) mapa
 
 {- | Substitui uma caixa por um espaço vazio (" ") numa linha do mapa.
-
-== Exemplos:
-@
- Exemplo 1 : removeCaixaLinha [Bloco,Vazio,Vazio,Caixa,Bloco] (2,1) = [Bloco,Vazio,Vazio,Vazio,Bloco]
-
- Exemplo 2 : removeCaixaLinha [Bloco,Caixa,Vazio,Caixa,Bloco] (2,2) = [Bloco,Caixa,Vazio,Vazio,Bloco]
-@
 -}
 
 removeCaixaLinha :: [Peca] -> Coordenadas -> [Peca]
