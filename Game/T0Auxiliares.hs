@@ -394,12 +394,22 @@ backgroundsA (OpcoesGeral, x) = x !! 8
 
 --- Função para encontrar a porta! ---
 
+{- | 
+Esta é a função que obtém as coordenadas da 'Porta' para poder, durante a 'reageEvento' avaliar se é o __fim__
+do nível ou não. Utiliza 'findPorta' como /auxiliar/.
+-}
+
 porta :: Jogo -> (Int,Int)
-porta (Jogo mapa1 (Jogador (x1,y1) w bool)) = findPorta mapa1 0 0
+porta (Jogo mapa (Jogador (x1,y1) w bool)) = findPorta mapa 0 0
+
+{- | 
+'findPorta' irá ler as 'listas' até encontrar a porta e assim devolver as 'coordenadas' corretas. Isto é,
+se a cada elemnto de uma lista não encontrar, irá adicionar __1__ a __x__, se no fim da lista não tiver encontrado e for
+para a seguinte, então aumenta __1__ a __y__.
+-}
 
 findPorta :: Mapa -> Int -> Int -> (Int,Int)
 findPorta [] x y = (0,0)
 findPorta ([]:t2) x y = findPorta t2 0 (y+1)
-findPorta ((h:t1):t2) x y = if h == Porta
-                        then (x,y)
-                        else findPorta (t1:t2) (x+1) y
+findPorta ((h:t1):t2) x y = if h == Porta then (x,y)
+                            else findPorta (t1:t2) (x+1) y
