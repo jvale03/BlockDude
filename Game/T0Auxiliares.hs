@@ -5,6 +5,7 @@ Copyright   : João Carlos Oliveira Vale <a100697@alunos.uminho.pt>; <carlosvale
 
 Módulo para o uso de auxiliares da parte Gráfica do jogo.
 -}
+{-# OPTIONS_GHC -Wno-incomplete-patterns #-}
 
 module T0Auxiliares (
       -- * Desenhar Todos
@@ -12,7 +13,7 @@ module T0Auxiliares (
     drawMenu, drawMenu2, opcoes,
       -- ** Desenhar Mapa
       -- **** Modo BlockDude
-      drawMapaN, drawMapa2N, drawPlayerN, pecasN, 
+      drawMapaN, drawMapa2N, drawPlayerN, pecasN,
       -- **** Modo DragonBall
       drawMapaDB, drawMapa2DB, drawPlayerDB, pecasDB,
       -- **** Modo AmongUs
@@ -24,7 +25,7 @@ module T0Auxiliares (
       -- ** Desenhar Vitória
     drawVitoria, drawVitoria2, victory,
       -- ** Desenhar Background
-    backgroundsN, backgroundsDB, backgroundsA, 
+    backgroundsN, backgroundsDB, backgroundsA,
       -- ** Detetar Porta
     porta, findPorta
     ) where
@@ -48,7 +49,7 @@ elemento de uma 'lista' seja feito o distanciamento em __x__.
 
 drawMenu :: ([[Tipos]], [Picture]) -> (Int,Int) -> [Picture]
 drawMenu ([], _) _ = []
-drawMenu ((h:t), menu) (x,y) = (Translate (fromIntegral (x*(100))) (-55) (Pictures (drawMenu2 (h, menu) y))) : (drawMenu (t, menu) (x+1,y))
+drawMenu (h:t, menu) (x,y) = Translate (fromIntegral (x*100)) (-55) (Pictures (drawMenu2 (h, menu) y)) : drawMenu (t, menu) (x+1,y)
 
 {- | 
 À semelhança da função anterior, aqui também é feito um distanciamento de 'Pictures', mas verticalmente.
@@ -61,7 +62,7 @@ Isto é, vai desenhando as colunas (verticalmente), usando também o 'Translate'
 
 drawMenu2 :: ([Tipos], [Picture]) -> Int -> [Picture]
 drawMenu2 ([], _) _ = []
-drawMenu2 ((h:t), menu) y = (Translate (-400) (fromIntegral (y*65)) (opcoes (h, menu))) : (drawMenu2 (t, menu) (y-1))
+drawMenu2 (h:t, menu) y = Translate (-400) (fromIntegral (y*65)) (opcoes (h, menu)) : drawMenu2 (t, menu) (y-1)
 
 {- | 
 Esta função utiliza os elementos da 'lista' para atribuir correspondência a cada 'Imagem' desejada!
@@ -72,7 +73,7 @@ Esta função utiliza os elementos da 'lista' para atribuir correspondência a c
 
 opcoes :: (Tipos, [Picture]) -> Picture
 opcoes (Nada, menu) = Blank
-opcoes (Play, menu) = menu !! 0
+opcoes (Play, menu) = head menu
 opcoes (Level, menu) = menu !! 1
 opcoes (Tips, menu) = menu !! 2
 opcoes (Exit, menu) = menu !! 3
@@ -92,35 +93,35 @@ opcoes (ATheme, menu) = menu !! 12
 
 drawMapaN :: (Mapa, [Picture]) -> (Int,Int) -> Float -> [Picture]
 drawMapaN ([], _) _ _ = []
-drawMapaN ((h:t), jogo) (x,y) b = (Translate (-600) (fromIntegral (y*(-48))) (Pictures (drawMapa2N (h, jogo) x b))) : (drawMapaN (t, jogo) (x,y+1) b)
+drawMapaN (h:t, jogo) (x,y) b = Translate (-600) (fromIntegral (y*(-48))) (Pictures (drawMapa2N (h, jogo) x b)) : drawMapaN (t, jogo) (x,y+1) b
 
 drawMapa2N :: ([Peca],[Picture]) -> Int -> Float -> [Picture]
 drawMapa2N ([], _) _ _ = []
-drawMapa2N ((h:t), jogo) x b = (Translate (fromIntegral (x*48)) 308 (pecasN (h, jogo) b)) : (drawMapa2N (t, jogo) (x+1) b)
+drawMapa2N (h:t, jogo) x b = Translate (fromIntegral (x*48)) 308 (pecasN (h, jogo) b) : drawMapa2N (t, jogo) (x+1) b
 
 drawPlayerN :: ([Peca], (Int,Int), [Picture]) -> Float -> [Picture]
 drawPlayerN ([],(_,_), _) _ = []
-drawPlayerN ((h:t),(x,y), jogo) b = (Translate (fromIntegral ((x*(48))-600)) (fromIntegral (y*(-48))+308) (pecasN (h, jogo) b)) : (drawPlayerN (t,(x,y+1), jogo) b)
+drawPlayerN (h:t,(x,y), jogo) b = Translate (fromIntegral (x*48-600)) (fromIntegral (y*(-48))+308) (pecasN (h, jogo) b) : drawPlayerN (t,(x,y+1), jogo) b
 
 drawMapaDB :: (Mapa, [Picture]) -> (Int,Int) -> Float -> [Picture]
 drawMapaDB ([], _) _ _ = []
-drawMapaDB ((h:t), jogo) (x,y) b = (Translate (-600) (fromIntegral (y*(-48))) (Pictures (drawMapa2DB (h, jogo) x b))) : (drawMapaDB (t, jogo) (x,y+1) b)
+drawMapaDB (h:t, jogo) (x,y) b = Translate (-600) (fromIntegral (y*(-48))) (Pictures (drawMapa2DB (h, jogo) x b)) : drawMapaDB (t, jogo) (x,y+1) b
 
 drawMapa2DB :: ([Peca],[Picture]) -> Int -> Float -> [Picture]
 drawMapa2DB ([], _) _ _ = []
-drawMapa2DB ((h:t), jogo) x b = (Translate (fromIntegral (x*48)) 308 (pecasDB (h, jogo) b)) : (drawMapa2DB (t, jogo) (x+1) b)
+drawMapa2DB (h:t, jogo) x b = Translate (fromIntegral (x*48)) 308 (pecasDB (h, jogo) b) : drawMapa2DB (t, jogo) (x+1) b
 
 drawPlayerDB :: ([Peca], (Int,Int), [Picture]) -> Float -> [Picture]
 drawPlayerDB ([],(_,_), _) _ = []
-drawPlayerDB ((h:t),(x,y), jogo) b = (Translate (fromIntegral ((x*(48))-600)) (fromIntegral (y*(-48))+308) (pecasDB (h, jogo) b)) : (drawPlayerDB (t,(x,y+1), jogo) b)
+drawPlayerDB (h:t,(x,y), jogo) b = Translate (fromIntegral (x*48-600)) (fromIntegral (y*(-48))+308) (pecasDB (h, jogo) b) : drawPlayerDB (t,(x,y+1), jogo) b
 
 drawMapaA :: (Mapa, [Picture]) -> (Int,Int) -> Float -> [Picture]
 drawMapaA ([], _) _ _ = []
-drawMapaA ((h:t), jogo) (x,y) b = (Translate (-600) (fromIntegral (y*(-48))) (Pictures (drawMapa2A (h, jogo) x b))) : (drawMapaA (t, jogo) (x,y+1) b)
+drawMapaA (h:t, jogo) (x,y) b = Translate (-600) (fromIntegral (y*(-48))) (Pictures (drawMapa2A (h, jogo) x b)) : drawMapaA (t, jogo) (x,y+1) b
 
 drawMapa2A :: ([Peca],[Picture]) -> Int -> Float -> [Picture]
 drawMapa2A ([], _) _ _ = []
-drawMapa2A ((h:t), jogo) x b = (Translate (fromIntegral (x*48)) 308 (pecasA (h, jogo) b)) : (drawMapa2A (t, jogo) (x+1) b)
+drawMapa2A (h:t, jogo) x b = Translate (fromIntegral (x*48)) 308 (pecasA (h, jogo) b) : drawMapa2A (t, jogo) (x+1) b
 
 {- | 
 Ideologia de todas as outras, no entanto aplica-se ao jogador, simples quanto isto!
@@ -128,11 +129,11 @@ Ideologia de todas as outras, no entanto aplica-se ao jogador, simples quanto is
 
 drawPlayerA :: ([Peca], (Int,Int), [Picture]) -> Float -> [Picture]
 drawPlayerA ([],(_,_), _) _ = []
-drawPlayerA ((h:t),(x,y), jogo) b = (Translate (fromIntegral ((x*(48))-600)) (fromIntegral (y*(-48))+308) (pecasA (h, jogo) b)) : (drawPlayerA (t,(x,y+1), jogo) b)
+drawPlayerA (h:t,(x,y), jogo) b = Translate (fromIntegral (x*48-600)) (fromIntegral (y*(-48))+308) (pecasA (h, jogo) b) : drawPlayerA (t,(x,y+1), jogo) b
 
 pecasN :: (Peca, [Picture]) -> Float -> Picture
 pecasN (Porta, jogo) b
-    | mod (round (b*50)) 200 < 100 = jogo !! 0
+    | mod (round (b*50)) 200 < 100 = head jogo
     | otherwise = jogo !! 1
 pecasN (PersonagemD, jogo) _ = jogo !! 2
 pecasN (PersonagemE, jogo) _ = jogo !! 3
@@ -162,15 +163,15 @@ pecasDB (Vazio, jogo) _ = Blank
 
 drawNiveis :: ([[Tipos]], [Picture]) -> (Int,Int) -> [Picture]
 drawNiveis ([], _) _ = []
-drawNiveis ((h:t), niveis) (x,y) = (Translate (fromIntegral (x*(85))) (-70) (Pictures (drawNiveis2 (h, niveis) y))) : (drawNiveis (t, niveis) (x+1,y))
+drawNiveis (h:t, niveis) (x,y) = Translate (fromIntegral (x*85)) (-70) (Pictures (drawNiveis2 (h, niveis) y)) : drawNiveis (t, niveis) (x+1,y)
 
 drawNiveis2 :: ([Tipos], [Picture]) -> Int -> [Picture]
 drawNiveis2 ([], _) _ = []
-drawNiveis2 ((h:t), niveis) y = (Translate (-380) (fromIntegral (y*55)) (levels (h, niveis))) : (drawNiveis2 (t, niveis) (y-1))
+drawNiveis2 (h:t, niveis) y = Translate (-380) (fromIntegral (y*55)) (levels (h, niveis)) : drawNiveis2 (t, niveis) (y-1)
 
 levels :: (Tipos, [Picture]) -> Picture
 levels (Nada, niveis) = Blank
-levels (Lvl1, niveis) = niveis !! 0
+levels (Lvl1, niveis) = head niveis
 levels (Lvl2, niveis) = niveis !! 1
 levels (Lvl3, niveis) = niveis !! 2
 levels (Lvl4, niveis) = niveis !! 3
@@ -199,10 +200,10 @@ levels (Show10, niveis) = niveis !! 21
 
 drawInstrucoes :: ([Tipos], [Picture]) -> Int -> [Picture]
 drawInstrucoes ([], _) _ = []
-drawInstrucoes ((h:t), instrucoes) y = (Translate 0 (fromIntegral (y*100)) (instruct (h,instrucoes))) : (drawInstrucoes (t,instrucoes) (y-1))
+drawInstrucoes (h:t, instrucoes) y = Translate 0 (fromIntegral (y*100)) (instruct (h,instrucoes)) : drawInstrucoes (t,instrucoes) (y-1)
 
 instruct :: (Tipos, [Picture]) -> Picture
-instruct (Tips, instrucoes) = instrucoes !! 0
+instruct (Tips, instrucoes) = head instrucoes
 instruct (Texto, instrucoes) = instrucoes !! 1
 instruct (Back, instrucoes) = instrucoes !! 2
 instruct (Select, instrucoes) = instrucoes !! 3
@@ -213,15 +214,15 @@ instruct (Select, instrucoes) = instrucoes !! 3
 
 drawVitoria :: ([[Tipos]], [Picture]) -> (Int,Int) -> [Picture]
 drawVitoria ([], _) _ = []
-drawVitoria ((h:t), vitoria) (x,y) = (Translate (fromIntegral (x*(90))) (-50) (Pictures (drawVitoria2 (h, vitoria) y))) : (drawVitoria (t, vitoria) (x+1,y))
+drawVitoria (h:t, vitoria) (x,y) = Translate (fromIntegral (x*90)) (-50) (Pictures (drawVitoria2 (h, vitoria) y)) : drawVitoria (t, vitoria) (x+1,y)
 
 drawVitoria2 :: ([Tipos], [Picture]) -> Int -> [Picture]
 drawVitoria2 ([], _) _ = []
-drawVitoria2 ((h:t), vitoria) y = (Translate (-150) (fromIntegral (y*65)) (victory (h, vitoria))) : (drawVitoria2 (t, vitoria) (y-1))
+drawVitoria2 (h:t, vitoria) y = Translate (-150) (fromIntegral (y*65)) (victory (h, vitoria)) : drawVitoria2 (t, vitoria) (y-1)
 
 victory :: (Tipos, [Picture]) -> Picture
 victory (Nada, vitoria) = Blank
-victory (WinBaixo, vitoria) = vitoria !! 0
+victory (WinBaixo, vitoria) = head vitoria
 victory (WinCima, vitoria) = vitoria !! 1
 victory (Exit, vitoria) = vitoria !! 2
 victory (Select, vitoria) = vitoria !! 3
@@ -241,7 +242,7 @@ Esta função utiliza os elementos da 'lista' para atribuir correspondência a c
 -}
 
 backgroundsDB :: (Tipos, [Picture]) -> Picture
-backgroundsDB (OpcoesGeral, x) = x !! 0
+backgroundsDB (OpcoesGeral, x) = head x
 backgroundsDB (NiveisGeral, x) = x !! 1
 backgroundsDB (GameGeral, x) = x !! 2
 
