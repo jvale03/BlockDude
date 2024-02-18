@@ -1,4 +1,4 @@
-# Laboratórios de Informática I
+# Block Dude
 
 ## About
 Replication of __Block Dude__ game in Haskell with some random features.
